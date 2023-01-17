@@ -1,0 +1,22 @@
+<resources>
+    <!-- Page Title Headers -->
+    <string name="app_name">SmartHomeApp</string>
+    <string name="title_home">Home</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_groups">Groups</string>
+    <string name="title_devices">All Devices</string>
+    <string name="title_schedule">Schedules</string>
+    <string name="title_profile">Profile</string>
+
+    <!-- Button Names (Probably delete later) -->
+    <string name="mng_add_new_device_btn">Add Devices</string>
+
+    <!-- Content Descriptions -->
+    <string name="add_a_new_device">Add a new device</string>
+    <string name="add_a_new_group">Add a new group</string>
+    <string name="custom_device_box_image">Custom Device Box Image</string>
+    <string name="navigate_to_profile">Navigate to Profile</string>
+
+    <!-- Stuff -->
+    <string name="ok">OK</string>
+</resources>
