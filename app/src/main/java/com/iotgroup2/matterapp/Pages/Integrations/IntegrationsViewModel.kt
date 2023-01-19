@@ -1,18 +1,12 @@
-package com.iotgroup2.matterapp.Pages.Groups
+package com.iotgroup2.matterapp.Pages.Integrations
 
-import android.util.Log
 import androidx.lifecycle.*
-import com.iotgroup2.matterapp.Pages.MatterViewModel.DeviceUiModel
-import com.iotgroup2.matterapp.R
 import kotlinx.coroutines.*
-import org.json.JSONObject
 import shared.Models.DeviceModel
-import shared.Utility.CatApi
-import timber.log.Timber
 import java.io.Serializable
 
-class GroupsViewModel : ViewModel(), DefaultLifecycleObserver {
-    private val _TAG = GroupsViewModel::class.java.simpleName
+class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
+    private val _TAG = IntegrationsViewModel::class.java.simpleName
 
     /** Encapsulated data **/
     private val _devices = MutableLiveData<List<DevicesListItem>>().apply {

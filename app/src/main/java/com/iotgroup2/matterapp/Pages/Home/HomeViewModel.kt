@@ -1,17 +1,16 @@
-package com.iotgroup2.matterapp.Pages.Devices
+package com.iotgroup2.matterapp.Pages.Home
 
 import androidx.lifecycle.*
-import com.iotgroup2.matterapp.Pages.MatterViewModel.DeviceUiModel
+import com.iotgroup2.matterapp.shared.MatterViewModel.DeviceUiModel
 import com.iotgroup2.matterapp.R
 import kotlinx.coroutines.*
-import org.json.JSONArray
 import org.json.JSONObject
 import shared.Models.DeviceModel
 import timber.log.Timber
 
 
-class MatterDeviceViewModel : ViewModel(), DefaultLifecycleObserver {
-    private val _TAG = MatterDeviceViewModel::class.java.simpleName
+class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
+    private val _TAG = HomeViewModel::class.java.simpleName
 
     /** Encapsulated data **/
     private val _devices = MutableLiveData<List<DevicesListItem>>().apply {

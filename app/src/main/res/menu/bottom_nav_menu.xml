@@ -4,14 +4,10 @@
     <item
         android:id="@+id/navigation_devices"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/title_devices" />
+        android:title="@string/title_home" />
     <item
-        android:id="@+id/navigation_groups"
-        android:icon="@drawable/ic_std_device"
-        android:title="@string/title_groups" />
-    <item
-        android:id="@+id/navigation_schedule"
-        android:icon="@drawable/ic_clock_icon"
-        android:title="@string/title_schedule" />
+        android:id="@+id/navigation_integrations"
+        android:icon="@drawable/ic_integration"
+        android:title="@string/title_integrations" />
 
 </menu>

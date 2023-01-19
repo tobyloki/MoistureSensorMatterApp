@@ -3,22 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    android:label="@string/title_groups"
+    android:label="@string/title_integrations"
     app:startDestination="@id/navigation_devices">
 
     <fragment
         android:id="@+id/navigation_devices"
-        android:name="com.iotgroup2.matterapp.Pages.Devices.MatterDeviceFragment"
-        android:label="Smart Home App"
-        tools:layout="@layout/fragment_matter_device" />
+        android:name="com.iotgroup2.matterapp.Pages.Home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
     <fragment
-        android:id="@+id/navigation_groups"
-        android:name="com.iotgroup2.matterapp.Pages.Groups.GroupsFragment"
-        android:label="Smart Home App"
-        tools:layout="@layout/fragment_groups"/>
-    <fragment
-        android:id="@+id/navigation_schedule"
-        android:name="com.iotgroup2.matterapp.Pages.Schedule.ScheduleFragment"
-        android:label="Smart Home App"
-        tools:layout="@layout/fragment_schedule" />
+        android:id="@+id/navigation_integrations"
+        android:name="com.iotgroup2.matterapp.Pages.Integrations.IntegrationsFragment"
+        android:label="Integrations"
+        tools:layout="@layout/fragment_integrations"/>
 </navigation>

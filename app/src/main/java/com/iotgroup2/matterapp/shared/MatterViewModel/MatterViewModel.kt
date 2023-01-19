@@ -1,4 +1,4 @@
-package com.iotgroup2.matterapp.Pages.MatterViewModel
+package com.iotgroup2.matterapp.shared.MatterViewModel
 
 import android.content.ComponentName
 import android.content.Context

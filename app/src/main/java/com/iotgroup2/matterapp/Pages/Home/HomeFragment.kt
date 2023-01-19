@@ -1,10 +1,11 @@
-package com.iotgroup2.matterapp.Pages.Devices
+package com.iotgroup2.matterapp.Pages.Home
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -17,10 +18,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
-import com.iotgroup2.matterapp.Pages.MatterViewModel.DevicesUiModel
-import com.iotgroup2.matterapp.Pages.MatterViewModel.MatterActivityViewModel
+import com.iotgroup2.matterapp.Pages.Home.Device.DeviceActivity
+import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
+import com.iotgroup2.matterapp.shared.MatterViewModel.DevicesUiModel
+import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
 import com.iotgroup2.matterapp.R
-import com.iotgroup2.matterapp.databinding.FragmentMatterDeviceBinding
+import com.iotgroup2.matterapp.databinding.FragmentHomeBinding
 import com.iotgroup2.matterapp.databinding.FragmentNewDeviceBinding
 import com.iotgroup2.matterapp.shared.matter.PERIODIC_UPDATE_INTERVAL_DEVICE_SCREEN_SECONDS
 import com.iotgroup2.matterapp.shared.matter.TaskStatus
@@ -29,9 +32,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class MatterDeviceFragment : Fragment() {
+class HomeFragment : Fragment() {
 
-    private lateinit var _binding: FragmentMatterDeviceBinding
+    private lateinit var _binding: FragmentHomeBinding
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding
@@ -41,34 +44,44 @@ class MatterDeviceFragment : Fragment() {
 
     private val viewModel: MatterActivityViewModel by viewModels()
 
-//    private lateinit var localDevicesUiModel: DevicesUiModel
-
     // New device information dialog
     private lateinit var newDeviceAlertDialogBinding: FragmentNewDeviceBinding
+
+    private lateinit var spinner : Spinner
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        setHasOptionsMenu(true)
+
         val matterDeviceViewModel =
-            ViewModelProvider(this).get(MatterDeviceViewModel::class.java)
+            ViewModelProvider(this).get(HomeViewModel::class.java)
 
         lifecycle.addObserver(matterDeviceViewModel)
-        _binding = FragmentMatterDeviceBinding.inflate(inflater, container, false)
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        spinner = _binding.spinner
+
+        // populate spinner with "Garden Node" and "Controller"
+        val spinnerArray = arrayOf("Garden Node", "Controller")
+        val adapter = context?.let { ArrayAdapter(it, android.R.layout.simple_spinner_item, spinnerArray) }
+        adapter?.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
 
         /** Devices List Recycle View **/
         val devicesListRecyclerView = binding.devicesList
 
         // Setup recycler view for the devices list
-        devicesListRecyclerView.layoutManager = GridLayoutManager(context, 3)
-        devicesListRecyclerView.adapter = MatterDevicesAdapter(listOf())
+        devicesListRecyclerView.layoutManager = GridLayoutManager(context, 2)
+        devicesListRecyclerView.adapter = HomeAdapter(requireContext(), listOf())
 
         matterDeviceViewModel.devices.observe(viewLifecycleOwner) { devices ->
 //            for (device in devices) {
 //                Timber.d("Device: ${device.label} is ${device.state}, online: ${device.online}")
 //            }
-            devicesListRecyclerView.adapter = MatterDevicesAdapter(devices)
+            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices)
         }
 
         /** Dynamic set UI elements **/
@@ -181,5 +194,24 @@ class MatterDeviceFragment : Fragment() {
 
         Timber.d("onPause(): Stopping periodic ping on devices")
         viewModel.stopDevicesPeriodicPing()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.home_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.changeUnits -> {
+                val intent = Intent(requireActivity(), UnitsActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

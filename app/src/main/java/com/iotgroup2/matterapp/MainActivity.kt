@@ -93,8 +93,7 @@ class MainActivity : AppCompatActivity() {
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_devices,
-                R.id.navigation_groups,
-                R.id.navigation_schedule
+                R.id.navigation_integrations
             )
         )
 

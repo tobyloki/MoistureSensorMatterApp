@@ -3,11 +3,24 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/ic_integration.xml" value="0.2965" />
+        <entry key="app/src/main/res/layout/activity_device.xml" value="0.5" />
+        <entry key="app/src/main/res/layout/activity_device_edit.xml" value="0.309375" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.309375" />
+        <entry key="app/src/main/res/layout/activity_units.xml" value="0.309375" />
+        <entry key="app/src/main/res/layout/device_list_item.xml" value="0.5" />
+        <entry key="app/src/main/res/layout/devices_list_item.xml" value="0.309375" />
         <entry key="app/src/main/res/layout/fragment_devices_editor.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_groups.xml" value="0.30885416666666665" />
+        <entry key="app/src/main/res/layout/fragment_home.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_matter_device.xml" value="0.30885416666666665" />
         <entry key="app/src/main/res/layout/fragment_new_device.xml" value="0.30885416666666665" />
         <entry key="app/src/main/res/layout/fragment_schedule.xml" value="0.30885416666666665" />
+        <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.309375" />
+        <entry key="app/src/main/res/menu/device_menu.xml" value="0.309375" />
+        <entry key="app/src/main/res/menu/devices_editor_activity_menu.xml" value="0.309375" />
+        <entry key="app/src/main/res/menu/edit_device_menu.xml" value="0.309375" />
+        <entry key="app/src/main/res/menu/home_menu.xml" value="0.309375" />
       </map>
     </option>
   </component>

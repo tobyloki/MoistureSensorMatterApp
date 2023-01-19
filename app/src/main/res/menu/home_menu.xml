@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".Pages.DevicesEditor.DevicesEditorActivity">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <item
         android:id="@+id/menu"
@@ -11,9 +10,9 @@
         app:showAsAction="always">
         <menu>
             <item
-                android:id="@+id/delete_group"
-                android:icon="@drawable/ic_baseline_delete_forever_24"
-                android:title="Delete Group"
+                android:id="@+id/changeUnits"
+                android:icon="@drawable/ic_baseline_settings_24"
+                android:title="Change Units"
                 app:showAsAction="always" />
         </menu>
     </item>

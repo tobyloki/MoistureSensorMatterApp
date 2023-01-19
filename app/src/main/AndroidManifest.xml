@@ -7,7 +7,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
         tools:ignore="CoarseFineLocation" />
     <uses-permission android:name="android.permission.NFC" />
 
@@ -21,40 +22,57 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MatterApp"
-        tools:targetApi="31">
-
+        tools:targetApi="33">
+        <activity
+            android:name="com.iotgroup2.matterapp.Pages.Units.UnitsActivity"
+            android:exported="false"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Units.UnitsActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
+            android:label="Units"/>
+        <activity
+            android:name="com.iotgroup2.matterapp.Pages.Home.Device.EditDevice.EditDeviceActivity"
+            android:exported="false"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Home.Device.EditDevice.EditDeviceActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
+            android:label="Edit Device"/>
+        <activity
+            android:name="com.iotgroup2.matterapp.Pages.Home.Device.DeviceActivity"
+            android:exported="false"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Home.Device.DeviceActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
+            android:label="Device"/>
         <activity
             android:name="com.iotgroup2.matterapp.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.google.android.gms.home.matter.ACTION_COMMISSION_DEVICE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="com.google.android.gms.home.matter.ACTION_COMMISSION_DEVICE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.iotgroup2.matterapp.Pages.DevicesEditor.DevicesEditorActivity"
-            android:exported="false"
-            android:parentActivityName="com.iotgroup2.matterapp.Pages.DevicesEditor.DevicesEditorActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
 
         <service
             android:name="com.iotgroup2.matterapp.shared.matter.commissioning.AppCommissioningService"
             android:exported="true" />
-
-        <service android:name="com.google.android.gms.metadata.ModuleDependencies"
+        <service
+            android:name="com.google.android.gms.metadata.ModuleDependencies"
             android:enabled="false"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
             </intent-filter>
 
-            <meta-data android:name="connectedhome:-1:preferred" android:value=""/>
+            <meta-data
+                android:name="connectedhome:-1:preferred"
+                android:value="" />
         </service>
     </application>
 

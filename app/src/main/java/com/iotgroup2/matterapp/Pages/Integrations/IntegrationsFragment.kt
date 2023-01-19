@@ -1,4 +1,4 @@
-package com.iotgroup2.matterapp.Pages.Groups
+package com.iotgroup2.matterapp.Pages.Integrations
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -7,14 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import com.iotgroup2.matterapp.Pages.MatterViewModel.MatterActivityViewModel
-import com.iotgroup2.matterapp.databinding.FragmentGroupsBinding
+import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
+import com.iotgroup2.matterapp.databinding.FragmentIntegrationsBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class GroupsFragment : Fragment() {
+class IntegrationsFragment : Fragment() {
 
-    private lateinit var _binding: FragmentGroupsBinding
+    private lateinit var _binding: FragmentIntegrationsBinding
 
     private val viewModel: MatterActivityViewModel by viewModels()
 
@@ -25,10 +25,10 @@ class GroupsFragment : Fragment() {
     ): View {
 
         val matterGroupsViewModel =
-            ViewModelProvider(this).get(GroupsViewModel::class.java)
+            ViewModelProvider(this).get(IntegrationsViewModel::class.java)
         lifecycle.addObserver(matterGroupsViewModel)
 
-        _binding = FragmentGroupsBinding.inflate(inflater, container, false)
+        _binding = FragmentIntegrationsBinding.inflate(inflater, container, false)
 
         val root: View = _binding.root
 
