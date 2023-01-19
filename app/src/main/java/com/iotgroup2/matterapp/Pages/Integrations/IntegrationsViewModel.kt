@@ -6,43 +6,22 @@ import shared.Models.DeviceModel
 import java.io.Serializable
 
 class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
-    private val _TAG = IntegrationsViewModel::class.java.simpleName
-
     /** Encapsulated data **/
-    private val _devices = MutableLiveData<List<DevicesListItem>>().apply {
+    val integrations = MutableLiveData<List<IntegrationListItem>>().apply {
         value = listOf()
     }
-
-    val groups = MutableLiveData<List<String>>().apply {
-        value = listOf()
-    }
-    val selectedGroup = MutableLiveData<Int>().apply {
-        value = 0
-    }
-
-    var devicesList: MutableList<DeviceModel> = mutableListOf()
-    private var loadedList = false
 
     private val matterDevicesViewModelJob = Job()
     private var coroutineScope = CoroutineScope(matterDevicesViewModelJob + Dispatchers.Main)
 
-    /** Public Accessors **/
-    val devices : LiveData<List<DevicesListItem>> = _devices
-
-    // Each Device List Entity
-    class DevicesListItem : Serializable {
+    // Each Integration List Entity
+    class IntegrationListItem : Serializable {
         var id: String = ""
         var label: String = ""
-        var state: Boolean = false
-        var online: Boolean = false
-        var image: Int = -1
 
-        constructor(id: String, label: String, state: Boolean, online: Boolean, image: Int) {
+        constructor(id: String, label: String) {
             this.id = id
             this.label = label
-            this.state = state
-            this.online = online
-            this.image = image
         }
 
         constructor()
@@ -51,5 +30,18 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
     /** Lifecycle Handlers **/
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
+    }
+
+    override fun onResume(owner: LifecycleOwner) {
+        super.onResume(owner)
+        getIntegrations()
+    }
+
+    private fun getIntegrations() {
+        // add 2 integrations
+        integrations.value = listOf(
+            IntegrationListItem("1", "Integration 1"),
+            IntegrationListItem("2", "Integration 2")
+        )
     }
 }

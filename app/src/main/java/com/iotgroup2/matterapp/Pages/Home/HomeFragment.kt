@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
-import com.iotgroup2.matterapp.Pages.Home.Device.DeviceActivity
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.shared.MatterViewModel.DevicesUiModel
 import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
@@ -198,7 +197,7 @@ class HomeFragment : Fragment() {
 
     @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.home_menu, menu)
+        inflater.inflate(R.menu.home_integrations_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
