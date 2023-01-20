@@ -14,6 +14,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationActuatorActivity
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationSensor.EditIntegrationSensorActivity
+import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAdd
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.databinding.ActivityEditIntegrationBinding
 import com.iotgroup2.matterapp.databinding.FragmentIntegrationsBinding
@@ -54,12 +55,12 @@ class EditIntegrationActivity : AppCompatActivity() {
         }
 
         ifAddBtn.setOnClickListener {
-            val intent = Intent(this, EditIntegrationSensorActivity::class.java)
+            val intent = Intent(this, SelectDeviceToAdd::class.java)
             intent.putExtra("deviceType", Device.DeviceType.TYPE_LIGHT_VALUE)
             startActivity(intent)
         }
         thenAddBtn.setOnClickListener {
-            val intent = Intent(this, EditIntegrationActuatorActivity::class.java)
+            val intent = Intent(this, SelectDeviceToAdd::class.java)
             intent.putExtra("deviceType", Device.DeviceType.TYPE_UNKNOWN)
             startActivity(intent)
         }
