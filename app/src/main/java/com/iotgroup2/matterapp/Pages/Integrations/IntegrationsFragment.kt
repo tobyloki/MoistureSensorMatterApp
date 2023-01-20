@@ -7,6 +7,8 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActivity
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
@@ -19,6 +21,8 @@ class IntegrationsFragment : Fragment() {
     private lateinit var _binding: FragmentIntegrationsBinding
 
     private val matterViewModel: MatterActivityViewModel by viewModels()
+
+    private lateinit var addIntegrationBtn: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +37,13 @@ class IntegrationsFragment : Fragment() {
         _binding = FragmentIntegrationsBinding.inflate(inflater, container, false)
 
         val root: View = _binding.root
+
+        addIntegrationBtn = _binding.addIntegrationBtn
+
+        addIntegrationBtn.setOnClickListener {
+            val intent = Intent(activity, EditIntegrationActivity::class.java)
+            startActivity(intent)
+        }
 
         val list = _binding.recyclerView
         list.layoutManager = GridLayoutManager(context, 1)

@@ -1,5 +1,6 @@
 package com.iotgroup2.matterapp.Pages.Integrations.EditIntegration
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -9,6 +10,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.iotgroup2.matterapp.Device
+import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationActuatorActivity
+import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationSensor.EditIntegrationSensorActivity
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.databinding.ActivityEditIntegrationBinding
 import com.iotgroup2.matterapp.databinding.FragmentIntegrationsBinding
@@ -20,6 +25,8 @@ class EditIntegrationActivity : AppCompatActivity() {
     private lateinit var thenList: RecyclerView
     private lateinit var cancelBtn: Button
     private lateinit var saveBtn: Button
+    private lateinit var ifAddBtn: FloatingActionButton
+    private lateinit var thenAddBtn: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +37,8 @@ class EditIntegrationActivity : AppCompatActivity() {
         thenList = binding.thenRecyclerView
         cancelBtn = binding.cancelBtn
         saveBtn = binding.saveBtn
+        ifAddBtn = binding.ifAddBtn
+        thenAddBtn = binding.thenAddBtn
 
         ifList.layoutManager = GridLayoutManager(this, 1)
         thenList.layoutManager = GridLayoutManager(this, 1)
@@ -42,6 +51,17 @@ class EditIntegrationActivity : AppCompatActivity() {
         }
         viewModel.thenList.observe(this) {
             thenList.adapter = EditIntegrationThenAdapter(this, it)
+        }
+
+        ifAddBtn.setOnClickListener {
+            val intent = Intent(this, EditIntegrationSensorActivity::class.java)
+            intent.putExtra("deviceType", Device.DeviceType.TYPE_LIGHT_VALUE)
+            startActivity(intent)
+        }
+        thenAddBtn.setOnClickListener {
+            val intent = Intent(this, EditIntegrationActuatorActivity::class.java)
+            intent.putExtra("deviceType", Device.DeviceType.TYPE_UNKNOWN)
+            startActivity(intent)
         }
 
         cancelBtn.setOnClickListener {
