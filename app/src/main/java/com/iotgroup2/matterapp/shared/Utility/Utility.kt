@@ -6,7 +6,7 @@ import com.iotgroup2.matterapp.R
 
 class Utility {
     companion object {
-        public fun getUnit(activity: Activity): Boolean {
+        fun getUnit(activity: Activity): Boolean {
             val sharedPref = activity.getSharedPreferences("userPrefs", Context.MODE_PRIVATE) ?: return false
             return sharedPref.getBoolean(activity.getString(R.string.unit_key), false)
         }

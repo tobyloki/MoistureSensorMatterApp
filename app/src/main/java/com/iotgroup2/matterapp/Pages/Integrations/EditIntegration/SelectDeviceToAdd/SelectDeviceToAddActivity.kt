@@ -5,11 +5,10 @@ import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationViewModel
 import com.iotgroup2.matterapp.databinding.ActivitySelectDeviceToAddBinding
 import timber.log.Timber
 
-class SelectDeviceToAdd : AppCompatActivity() {
+class SelectDeviceToAddActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySelectDeviceToAddBinding
 
     private lateinit var selectDeviceRecyclerView: RecyclerView
@@ -23,18 +22,19 @@ class SelectDeviceToAdd : AppCompatActivity() {
 
         /* Initialize Data */
         val extras: Bundle = intent.extras ?: return pageLoadFail("No extras passed to page")
+        val integrationId = extras.getString("integrationId")
         val deviceType = extras.getInt("deviceType")
         Timber.i("deviceType: $deviceType")
 
         selectDeviceRecyclerView = binding.selectDeviceRecyclerView
 
-        viewModel = ViewModelProvider(this).get(SelectDeviceToAddViewModel::class.java)
+        viewModel = ViewModelProvider(this, SelectDeviceToAddViewModelFactory(deviceType)).get(SelectDeviceToAddViewModel::class.java)
         lifecycle.addObserver(viewModel)
 
         selectDeviceRecyclerView.layoutManager = GridLayoutManager(this, 1)
 
         viewModel.deviceList.observe(this) {
-            selectDeviceRecyclerView.adapter = SelectDeviceToAddAdapter(this, it, deviceType)
+            selectDeviceRecyclerView.adapter = SelectDeviceToAddAdapter(this, it, deviceType, integrationId!!)
         }
     }
 

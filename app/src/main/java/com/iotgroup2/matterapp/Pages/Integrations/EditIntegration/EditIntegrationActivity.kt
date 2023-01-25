@@ -5,27 +5,27 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
+import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputLayout
 import com.iotgroup2.matterapp.Device
-import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationActuatorActivity
-import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationSensor.EditIntegrationSensorActivity
-import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAdd
+import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAddActivity
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.databinding.ActivityEditIntegrationBinding
-import com.iotgroup2.matterapp.databinding.FragmentIntegrationsBinding
+import timber.log.Timber
 
 class EditIntegrationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditIntegrationBinding
 
+    private lateinit var viewModel: EditIntegrationViewModel
+
+    private lateinit var nameFieldLayout : TextInputLayout
     private lateinit var ifList: RecyclerView
     private lateinit var thenList: RecyclerView
-    private lateinit var cancelBtn: Button
-    private lateinit var saveBtn: Button
     private lateinit var ifAddBtn: FloatingActionButton
     private lateinit var thenAddBtn: FloatingActionButton
 
@@ -34,43 +34,75 @@ class EditIntegrationActivity : AppCompatActivity() {
         binding = ActivityEditIntegrationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // get extra data
+        val integrationId = intent.getStringExtra("integrationId")
+
+        nameFieldLayout = binding.nameFieldLayout
         ifList = binding.recyclerView2
         thenList = binding.thenRecyclerView
-        cancelBtn = binding.cancelBtn
-        saveBtn = binding.saveBtn
         ifAddBtn = binding.ifAddBtn
         thenAddBtn = binding.thenAddBtn
 
         ifList.layoutManager = GridLayoutManager(this, 1)
         thenList.layoutManager = GridLayoutManager(this, 1)
 
-        val viewModel = ViewModelProvider(this).get(EditIntegrationViewModel::class.java)
+        viewModel = ViewModelProvider(this, EditIntegrationViewModelFactory(integrationId!!)).get(EditIntegrationViewModel::class.java)
         lifecycle.addObserver(viewModel)
 
+        viewModel.name.observe(this) {
+            nameFieldLayout.editText?.setText(it)
+        }
         viewModel.ifList.observe(this) {
             ifList.adapter = EditIntegrationIfAdapter(this, it)
         }
         viewModel.thenList.observe(this) {
-            thenList.adapter = EditIntegrationThenAdapter(this, it)
+            thenList.adapter = EditIntegrationThenAdapter(this, it, integrationId)
+        }
+        viewModel.finishedSaving.observe(this) {
+            if (it) {
+                goBack()
+            }
         }
 
         ifAddBtn.setOnClickListener {
-            val intent = Intent(this, SelectDeviceToAdd::class.java)
+            val intent = Intent(this, SelectDeviceToAddActivity::class.java)
+            intent.putExtra("integrationId", integrationId)
             intent.putExtra("deviceType", Device.DeviceType.TYPE_LIGHT_VALUE)
             startActivity(intent)
         }
         thenAddBtn.setOnClickListener {
-            val intent = Intent(this, SelectDeviceToAdd::class.java)
+            val intent = Intent(this, SelectDeviceToAddActivity::class.java)
+            intent.putExtra("integrationId", integrationId)
             intent.putExtra("deviceType", Device.DeviceType.TYPE_UNKNOWN)
             startActivity(intent)
         }
 
-        cancelBtn.setOnClickListener {
-            goBack()
-        }
-        saveBtn.setOnClickListener {
-            goBack()
-        }
+        // intercept the back button
+//        onBackPressedDispatcher.addCallback(this) {
+//            // Handle the back button event
+//            Timber.i("intercepted back button")
+//
+//            val name = nameFieldLayout.editText?.text.toString().trim()
+//            viewModel.saveName(name)
+//        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+//        super.onBackPressed()
+        // Handle the back button event
+        Timber.i("intercepted back button")
+        val name = nameFieldLayout.editText?.text.toString().trim()
+        viewModel.saveName(name)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+//        super.onSupportNavigateUp()
+        // Handle the back button event from the toolbar
+        Timber.i("intercepted toolbar back button")
+        val name = nameFieldLayout.editText?.text.toString().trim()
+        viewModel.saveName(name)
+        return false
     }
 
     private fun goBack() {

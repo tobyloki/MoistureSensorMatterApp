@@ -2,7 +2,11 @@ package com.iotgroup2.matterapp.Pages.Integrations
 
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
-import shared.Models.DeviceModel
+import okhttp3.MediaType
+import okhttp3.RequestBody
+import org.json.JSONObject
+import shared.Utility.HTTP
+import timber.log.Timber
 import java.io.Serializable
 
 class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
@@ -11,8 +15,8 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
         value = listOf()
     }
 
-    private val matterDevicesViewModelJob = Job()
-    private var coroutineScope = CoroutineScope(matterDevicesViewModelJob + Dispatchers.Main)
+    private val viewModelJob = Job()
+    private var coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     // Each Integration List Entity
     class IntegrationListItem : Serializable {
@@ -34,14 +38,44 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
+        Timber.i("Resuming IntegrationsViewModel")
         getIntegrations()
     }
 
     private fun getIntegrations() {
         // add 2 integrations
-        integrations.value = listOf(
-            IntegrationListItem("1", "Integration 1"),
-            IntegrationListItem("2", "Integration 2")
-        )
+//        integrations.value = listOf(
+//            IntegrationListItem("1", "Integration 1"),
+//            IntegrationListItem("2", "Integration 2")
+//        )
+
+        coroutineScope.launch {
+            try {
+                Timber.i("Sending http request to graphql endpoint...")
+
+                val json = JSONObject()
+                json.put("query", "query MyQuery {\n" +
+                        "  listIntegrations {\n" +
+                        "    items {\n" +
+                        "      id\n" +
+                        "      name\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}")
+                val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                val httpResponse = HTTP.retrofitService.query(body).await()
+                Timber.i("data: $httpResponse")
+
+                val data = JSONObject(httpResponse).getJSONObject("data").getJSONObject("listIntegrations").getJSONArray("items")
+                val integrationList = mutableListOf<IntegrationListItem>()
+                for (i in 0 until data.length()) {
+                    val integration = data.getJSONObject(i)
+                    integrationList.add(IntegrationListItem(integration.getString("id"), integration.getString("name")))
+                }
+                integrations.value = integrationList
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
     }
 }

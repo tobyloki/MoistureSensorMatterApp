@@ -24,10 +24,10 @@
         android:theme="@style/Theme.MatterApp"
         tools:targetApi="33">
         <activity
-            android:name="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAdd"
+            android:name="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAddActivity"
             android:exported="false"
             android:label="Select Device"
-            android:parentActivityName="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAdd"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAddActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
