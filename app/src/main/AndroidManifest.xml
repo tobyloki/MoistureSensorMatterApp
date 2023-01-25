@@ -88,6 +88,13 @@
         </activity>
 
         <service
+            android:name="com.iotgroup2.matterapp.Services.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
             android:name="com.iotgroup2.matterapp.shared.matter.commissioning.AppCommissioningService"
             android:exported="true" />
         <service

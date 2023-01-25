@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1034957591793",
+    "project_id": "moisturesensor-dc141",
+    "storage_bucket": "moisturesensor-dc141.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1034957591793:android:13120ab0cc13b9d6f54550",
+        "android_client_info": {
+          "package_name": "com.iotgroup2.matterapp.default"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1034957591793-ad1g3vmsl28ctu7o83r7l0vn179seiem.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-H4u-PkSe0isNkj7aDxHb55Btc7_Rbsg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1034957591793-ad1g3vmsl28ctu7o83r7l0vn179seiem.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
