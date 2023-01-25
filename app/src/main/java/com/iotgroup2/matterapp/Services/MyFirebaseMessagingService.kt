@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.os.Build
+import android.app.PendingIntent
+import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.iotgroup2.matterapp.MainActivity
 import com.iotgroup2.matterapp.R
 import timber.log.Timber
 
@@ -39,7 +41,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     private lateinit var notificationManager: NotificationManager
     private var NOTIFY_ID = 0
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "UnspecifiedImmutableFlag")
     private fun sendNotification(messageBody: String) {
         // init notification manager
         if (!::notificationManager.isInitialized) {
@@ -53,6 +55,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
+        // set notification tap to open app
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
         // make a push notification
         val builder = NotificationCompat.Builder(this, "channelId")
             .setDefaults(Notification.DEFAULT_ALL)
@@ -61,7 +68,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setContentTitle("Alert")
             .setContentText(messageBody)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
             .build()
+
 
         // show the notification
         with(NotificationManagerCompat.from(this)) {
