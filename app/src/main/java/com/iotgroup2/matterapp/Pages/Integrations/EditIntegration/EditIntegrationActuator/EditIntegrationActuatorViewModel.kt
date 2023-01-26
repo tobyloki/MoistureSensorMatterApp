@@ -70,11 +70,7 @@ class EditIntegrationViewModel(private val method: String, private val integrati
     /** Lifecycle Handlers **/
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
-
-        // if we are editing the actuator, populate the fields with the actuator's data
-        if (method == "EDIT") {
-            getActuatorData()
-        }
+        getActuatorData()
     }
 
     override fun onResume(owner: LifecycleOwner) {
@@ -88,7 +84,7 @@ class EditIntegrationViewModel(private val method: String, private val integrati
 
                 val json = JSONObject()
                 json.put("query", "query MyQuery {\n" +
-                        "  getActuator(id: \"MyActuator\") {\n" +
+                        "  getActuator(id: \"$deviceId\") {\n" +
                         "    name\n" +
                         "    expirationValue\n" +
                         "    expirationGranularity\n" +
@@ -101,8 +97,13 @@ class EditIntegrationViewModel(private val method: String, private val integrati
 
                 val root = JSONObject(httpResponse).getJSONObject("data").getJSONObject("getActuator")
                 name.value = root.getString("name")
-                expirationValue.value = root.getInt("expirationValue")
-                expirationGranularity.value = root.getString("expirationGranularity")
+
+                // don't update these fields if we are adding a new actuator, leave the default options for the user
+                if (method == "EDIT") {
+                    expirationValue.value = root.getInt("expirationValue")
+                    expirationGranularity.value = root.getString("expirationGranularity")
+                }
+
                 _version.value = root.getInt("_version")
             } catch (e: Exception) {
                 Timber.e(e)
@@ -121,6 +122,7 @@ class EditIntegrationViewModel(private val method: String, private val integrati
                         "    id\n" +
                         "  }\n" +
                         "}")
+                Timber.i("json: $json")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                 val httpResponse = HTTP.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")

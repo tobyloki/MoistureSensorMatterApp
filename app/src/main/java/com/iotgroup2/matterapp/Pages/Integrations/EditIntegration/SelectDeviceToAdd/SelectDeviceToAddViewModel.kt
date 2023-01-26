@@ -64,7 +64,7 @@ class SelectDeviceToAddViewModel(private val deviceType: Int) : ViewModel(), Def
         coroutineScope.launch {
             try {
                 var queryStr = ""
-                if (deviceType == Device.DeviceType.TYPE_LIGHT_VALUE) {
+                if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
                     queryStr = "listSensors"
                 } else {
                     queryStr = "listActuators"
@@ -79,6 +79,7 @@ class SelectDeviceToAddViewModel(private val deviceType: Int) : ViewModel(), Def
                         "      id\n" +
                         "      name\n" +
                         "      _version\n" +
+                        "      _deleted\n" +
                         "      integrationID\n" +
                         "    }\n" +
                         "  }\n" +
@@ -96,10 +97,24 @@ class SelectDeviceToAddViewModel(private val deviceType: Int) : ViewModel(), Def
                     val label = item.getString("name")
                     val _version = item.getInt("_version")
 
-                    val integrationID = item.getString("integrationID")
                     // if item doesn't belong to an integration yet, add it here
+                    // TODO: can't do this because of Amplify's conflict control
+                    // TODO: after integration is deleted, it still lives on DynamoDB with _deleted = true and a TTL expiration
+                    // TODO: all devices associated with that integration will still have its integrationID set
+                    // TODO: so just show all devices for now. They will simply be updated in database anyways.
+//                    val integrationID = item.getString("integrationID")
+//                    if (integrationID == "null") {
+//                        deviceList.value = deviceList.value?.plus(SelectDeviceItem(id, label, _version))
+//                    }
 
-                    if (integrationID == "null") {
+                    try {
+                        val _deleted = item.getBoolean("_deleted")
+                        if (!_deleted) {
+                            deviceList.value = deviceList.value?.plus(SelectDeviceItem(id, label, _version))
+                        }
+                    } catch (e: Exception) {
+//                        Timber.e(e)
+                        // means _deleted doesn't exist, so it's false
                         deviceList.value = deviceList.value?.plus(SelectDeviceItem(id, label, _version))
                     }
                 }

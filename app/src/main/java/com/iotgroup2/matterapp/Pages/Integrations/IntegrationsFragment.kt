@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.iotgroup2.matterapp.Pages.Integrations.CreateIntegration.CreateIntegrationActivity
+import com.iotgroup2.matterapp.Pages.Integrations.CreateIntegration.CreateIntegrationViewModel
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActivity
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.R
@@ -41,7 +43,7 @@ class IntegrationsFragment : Fragment() {
         addIntegrationBtn = _binding.addIntegrationBtn
 
         addIntegrationBtn.setOnClickListener {
-            val intent = Intent(activity, EditIntegrationActivity::class.java)
+            val intent = Intent(activity, CreateIntegrationActivity::class.java)
             startActivity(intent)
         }
 

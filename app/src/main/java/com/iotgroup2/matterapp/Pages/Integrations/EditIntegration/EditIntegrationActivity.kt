@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
@@ -28,6 +29,7 @@ class EditIntegrationActivity : AppCompatActivity() {
     private lateinit var thenList: RecyclerView
     private lateinit var ifAddBtn: FloatingActionButton
     private lateinit var thenAddBtn: FloatingActionButton
+    private lateinit var doneBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +44,7 @@ class EditIntegrationActivity : AppCompatActivity() {
         thenList = binding.thenRecyclerView
         ifAddBtn = binding.ifAddBtn
         thenAddBtn = binding.thenAddBtn
+        doneBtn = binding.doneBtn
 
         ifList.layoutManager = GridLayoutManager(this, 1)
         thenList.layoutManager = GridLayoutManager(this, 1)
@@ -63,28 +66,29 @@ class EditIntegrationActivity : AppCompatActivity() {
                 goBack()
             }
         }
+        viewModel.finishedDeleting.observe(this) {
+            if (it) {
+                goBack()
+            }
+        }
 
         ifAddBtn.setOnClickListener {
             val intent = Intent(this, SelectDeviceToAddActivity::class.java)
             intent.putExtra("integrationId", integrationId)
-            intent.putExtra("deviceType", Device.DeviceType.TYPE_LIGHT_VALUE)
+            intent.putExtra("deviceType", Device.DeviceType.TYPE_UNKNOWN_VALUE)
             startActivity(intent)
         }
         thenAddBtn.setOnClickListener {
             val intent = Intent(this, SelectDeviceToAddActivity::class.java)
             intent.putExtra("integrationId", integrationId)
-            intent.putExtra("deviceType", Device.DeviceType.TYPE_UNKNOWN)
+            intent.putExtra("deviceType", Device.DeviceType.TYPE_UNSPECIFIED_VALUE)
             startActivity(intent)
         }
 
-        // intercept the back button
-//        onBackPressedDispatcher.addCallback(this) {
-//            // Handle the back button event
-//            Timber.i("intercepted back button")
-//
-//            val name = nameFieldLayout.editText?.text.toString().trim()
-//            viewModel.saveName(name)
-//        }
+        doneBtn.setOnClickListener {
+            val name = nameFieldLayout.editText?.text.toString().trim()
+            viewModel.saveName(name)
+        }
     }
 
     @Deprecated("Deprecated in Java")
@@ -120,7 +124,7 @@ class EditIntegrationActivity : AppCompatActivity() {
         builder.setTitle("Delete Integration")
         builder.setMessage("Are you sure you want to delete this integration?")
         builder.setPositiveButton("Confirm") { dialog, which ->
-            goBack()
+            viewModel.deleteIntegration()
         }
         builder.setNegativeButton("Cancel") { dialog, which ->
             dialog.dismiss()

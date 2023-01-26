@@ -1,11 +1,13 @@
 package com.iotgroup2.matterapp.Pages.Home
 
 import androidx.lifecycle.*
+import com.iotgroup2.matterapp.Device.DeviceType
 import com.iotgroup2.matterapp.shared.MatterViewModel.DeviceUiModel
-import com.iotgroup2.matterapp.R
 import kotlinx.coroutines.*
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import org.json.JSONObject
-import shared.Models.DeviceModel
+import shared.Utility.HTTP
 import timber.log.Timber
 
 
@@ -17,11 +19,10 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
         value = listOf()
     }
 
-    private var devicesList: MutableList<DeviceModel> = mutableListOf()
     private var loadedList = false
 
-    private val matterDevicesViewModelJob = Job()
-    private var coroutineScope = CoroutineScope(matterDevicesViewModelJob + Dispatchers.Main)
+    private val viewModelJob = Job()
+    private var coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     /** Public Accessors **/
     val devices : LiveData<List<DevicesListItem>> = _devices
@@ -30,20 +31,25 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
     class DevicesListItem {
         var id: String = ""
         var label: String = ""
+        var type: Int = DeviceType.TYPE_UNSPECIFIED_VALUE
         var state: Boolean = false
         var online: Boolean = false
-        var image: Int = -1
 
-        constructor(id: String, label: String, state: Boolean, online: Boolean, image: Int) {
+        constructor(id: String, label: String, type: Int, state: Boolean, online: Boolean) {
             this.id = id
             this.label = label
+            this.type = type
             this.state = state
             this.online = online
-            this.image = image
         }
 
         constructor()
     }
+
+    class Item(var id: String, var name: String) {
+    }
+
+    private var itemList = mutableListOf<Item>()
 
     /** Lifecycle Handlers **/
     override fun onCreate(owner: LifecycleOwner) {
@@ -53,40 +59,69 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
 
-//        coroutineScope.launch {
-//            try {
-//                val awsHttpResponse = CatApi.retrofitService.getDevices().await()
-//                devicesList = mutableListOf<DeviceModel>()
-//
-//                val data = JSONObject(awsHttpResponse).getJSONArray("devices")
-//                for ( i in 0 until data.length() ) {
-//                    try {
-//                        devicesList.add(DeviceModel(data.getJSONObject(i)))
-//                    } catch (e : Exception) {
-//                        Timber.e("Parsing devices list error: %s", e)
-//                    }
-//                }
-//
-//                Timber.i("Devices: $data")
-//
-//                // Generate mutable DevicesListItem
-//                val mutableDevicesList = mutableListOf<DevicesListItem>()
-//                devicesList.forEach {
-//                    // TODO: The structure of DeviceListItem might be wrong?
-//                    mutableDevicesList.add(DevicesListItem(it.getDeviceId(), it.getDeviceName(), false, false, R.drawable.ic_baseline_outlet_24))
-//                }
-//
-//                // Send event to update Devices View
-//                _devices.postValue(mutableDevicesList)
+        coroutineScope.launch {
+            try {
+                Timber.i("Sending http request to graphql endpoint...")
 
-//                Timber.i("Devices: ${devices.value}")
+                val json = JSONObject()
+                json.put("query", "query MyQuery {\n" +
+                        "  listSensors {\n" +
+                        "    items {\n" +
+                        "      id\n" +
+                        "      name\n" +
+                        "      _deleted\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "  listActuators {\n" +
+                        "    items {\n" +
+                        "      id\n" +
+                        "      name\n" +
+                        "      _deleted\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}")
+                val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                val httpResponse = HTTP.retrofitService.query(body).await()
+                Timber.i("data: $httpResponse")
+
+                val root = JSONObject(httpResponse).getJSONObject("data")
+                val sensors = root.getJSONObject("listSensors").getJSONArray("items")
+                val actuators = root.getJSONObject("listActuators").getJSONArray("items")
+
+                itemList = mutableListOf<Item>()
+
+                for (i in 0 until sensors.length()) {
+                    val sensor = sensors.getJSONObject(i)
+                    try {
+                        val _deleted = sensor.getBoolean("_deleted")
+                        if (!_deleted) {
+                            itemList.add(Item(sensor.getString("id"), sensor.getString("name")))
+                        }
+                    } catch (e: Exception) {
+//                        Timber.e(e)
+                        // means _deleted is null, therefore it is false
+                        itemList.add(Item(sensor.getString("id"), sensor.getString("name")))
+                    }
+                }
+                for (i in 0 until actuators.length()) {
+                    val actuator = actuators.getJSONObject(i)
+                    try {
+                    val _deleted = actuator.getBoolean("_deleted")
+                        if (!_deleted) {
+                            itemList.add(Item(actuator.getString("id"), actuator.getString("name")))
+                        }
+                    } catch (e: Exception) {
+//                        Timber.e(e)
+                        // means _deleted is null, therefore it is false
+                        itemList.add(Item(actuator.getString("id"), actuator.getString("name")))
+                    }
+                }
 
                 loadedList = true
-//            } catch (e : Exception) {
-//                e.printStackTrace()
-//                Log.e(_TAG, "Async getDevices failed: ${e.localizedMessage}")
-//            }
-//        }
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
     }
 
     fun updateDeviceStates(matterDevices: List<DeviceUiModel>) {
@@ -113,33 +148,71 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
     fun addDevice(matterDevices: List<DeviceUiModel>) {
         // check if a new device is added (find first missing device)
         coroutineScope.launch {
+            Timber.i("step 1")
             while(!loadedList) {
                 // sleep for 1 second
                 withContext(Dispatchers.IO) {
                     Thread.sleep(1000)
                 }
             }
+            Timber.i("step 2")
 
             val mutableDevicesList = mutableListOf<DevicesListItem>()
 
             for (matterDevice in matterDevices) {
-                    Timber.i("New device found id: ${matterDevice.device.deviceId}")
-                    // create Device json object
-                    val json = JSONObject()
-                    json.put("id", matterDevice.device.deviceId.toString())
-                    json.put("name", matterDevice.device.name)
-                    json.put("active", true)
-                    json.put("wifi", matterDevice.device.room)
-                    json.put("deviceType", matterDevice.device.deviceTypeValue.toString())    // TODO: map to string name
+                val id = matterDevice.device.deviceId.toString()
+                val name = matterDevice.device.name
+                val deviceType = matterDevice.device.deviceTypeValue
 
-                    // add to devicesList
-                    val device = (DeviceModel(json))
-                    devicesList.add(device)
-                    mutableDevicesList.add(DevicesListItem(device.getDeviceId(), device.getDeviceName(), matterDevice.isOn, matterDevice.isOnline, R.drawable.ic_std_device))
+                var addedToBackend = false
+                for (item in itemList) {
+                    if (item.id == matterDevice.device.deviceId.toString()) {
+                        addedToBackend = true
+                        break
+                    }
+                }
+
+                Timber.i("Device: $id, Name: $name, Type: $deviceType, Added: $addedToBackend")
+                if (!addedToBackend) {
+                    Timber.i("New device found: ($id, $name, $deviceType). Adding to backend...")
+
+                    // add to backend
+                    addDeviceToBackend(id, name, deviceType)
+                }
+
+                // add to ui list
+                mutableDevicesList.add(DevicesListItem(id, name, deviceType, matterDevice.isOn, matterDevice.isOnline))
             }
 
             // Send event to update Devices View
             _devices.postValue(mutableDevicesList)
+        }
+    }
+
+    private fun addDeviceToBackend(id: String, name: String, deviceType: Int) {
+        coroutineScope.launch {
+            try {
+                Timber.i("Sending http request to graphql endpoint...")
+
+                var query = ""
+                if (deviceType == DeviceType.TYPE_UNKNOWN_VALUE) {
+                    query = "createSensor"
+                } else {
+                    query = "createActuator"
+                }
+
+                val json = JSONObject()
+                json.put("query", "mutation MyMutation {\n" +
+                        "  $query(input: {id: \"$id\", name: \"$name\"}) {\n" +
+                        "    id\n" +
+                        "  }\n" +
+                        "}")
+                val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                val httpResponse = HTTP.retrofitService.query(body).await()
+                Timber.i("data: $httpResponse")
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
     }
 }

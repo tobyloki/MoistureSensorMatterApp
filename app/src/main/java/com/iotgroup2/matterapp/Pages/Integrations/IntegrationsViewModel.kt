@@ -59,6 +59,7 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
                         "    items {\n" +
                         "      id\n" +
                         "      name\n" +
+                        "      _deleted\n" +
                         "    }\n" +
                         "  }\n" +
                         "}")
@@ -70,7 +71,26 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
                 val integrationList = mutableListOf<IntegrationListItem>()
                 for (i in 0 until data.length()) {
                     val integration = data.getJSONObject(i)
-                    integrationList.add(IntegrationListItem(integration.getString("id"), integration.getString("name")))
+                    try {
+                        val _deleted = integration.getBoolean("_deleted")
+                        if (!_deleted) {
+                            integrationList.add(
+                                IntegrationListItem(
+                                    integration.getString("id"),
+                                    integration.getString("name")
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+//                        Timber.e(e)
+                        // means _deleted is null, therefore it is false
+                        integrationList.add(
+                            IntegrationListItem(
+                                integration.getString("id"),
+                                integration.getString("name")
+                            )
+                        )
+                    }
                 }
                 integrations.value = integrationList
             } catch (e: Exception) {

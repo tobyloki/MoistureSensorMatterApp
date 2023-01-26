@@ -24,6 +24,13 @@
         android:theme="@style/Theme.MatterApp"
         tools:targetApi="33">
         <activity
+            android:name="com.iotgroup2.matterapp.Pages.Integrations.CreateIntegration.CreateIntegrationActivity"
+            android:exported="false"
+            android:label="Select Device"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Integrations.CreateIntegration.CreateIntegrationActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
             android:name="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.SelectDeviceToAdd.SelectDeviceToAddActivity"
             android:exported="false"
             android:label="Select Device"
@@ -35,13 +42,6 @@
             android:exported="false"
             android:label="Edit Integration Actuator"
             android:parentActivityName="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationActuatorActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
-        <activity
-            android:name="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationSensor.EditIntegrationSensorActivity"
-            android:exported="false"
-            android:label="Edit Integration Sensor"
-            android:parentActivityName="com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationSensor.EditIntegrationSensorActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
@@ -74,7 +74,9 @@
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name="com.iotgroup2.matterapp.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

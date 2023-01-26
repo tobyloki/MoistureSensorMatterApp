@@ -1,6 +1,7 @@
 package com.iotgroup2.matterapp.Pages.Integrations.EditIntegration
 
 import androidx.lifecycle.*
+import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Pages.Integrations.IntegrationsViewModel
 import kotlinx.coroutines.*
 import okhttp3.MediaType
@@ -69,6 +70,9 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
     }
 
     val finishedSaving = MutableLiveData<Boolean>().apply {
+        value = false
+    }
+    val finishedDeleting = MutableLiveData<Boolean>().apply {
         value = false
     }
 
@@ -187,6 +191,28 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
             }
         } else {
             finishedSaving.value = true
+        }
+    }
+
+    fun deleteIntegration() {
+        coroutineScope.launch {
+            try {
+                Timber.i("Sending http request to graphql endpoint...")
+
+                val json = JSONObject()
+                json.put("query", "mutation MyMutation {\n" +
+                        "  deleteIntegration(input: {id: \"$integrationId\", _version: $_version}) {\n" +
+                        "    id\n" +
+                        "  }\n" +
+                        "}")
+                val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                val httpResponse = HTTP.retrofitService.query(body).await()
+                Timber.i("data: $httpResponse")
+
+                finishedDeleting.value = true
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
     }
 }

@@ -49,6 +49,7 @@ class HomeAdapter(var context: Context, var devices : List<HomeViewModel.Devices
             // launch DevicesEditor activity
             val intent = Intent(holder.itemView.context, DeviceActivity::class.java)
             intent.putExtra("deviceId", device.id)
+            intent.putExtra("deviceType", device.type)
             holder.itemView.context.startActivity(intent)
         }
     }

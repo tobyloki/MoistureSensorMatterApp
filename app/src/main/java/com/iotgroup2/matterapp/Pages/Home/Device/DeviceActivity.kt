@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
+import com.iotgroup2.matterapp.Device.DeviceType
 import com.iotgroup2.matterapp.Pages.Home.Device.EditDevice.EditDeviceActivity
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.R
@@ -28,6 +29,7 @@ class DeviceActivity : AppCompatActivity() {
     private lateinit var _binding: ActivityDeviceBinding
 
     private lateinit var deviceId: String
+    private var deviceType: Int = DeviceType.TYPE_UNSPECIFIED_VALUE
 
     private lateinit var nameTxt: TextView
     private lateinit var onlineIcon: TextView
@@ -54,7 +56,9 @@ class DeviceActivity : AppCompatActivity() {
         if(extras == null)
             return pageLoadFail("No extras passed to page")
         deviceId = extras.getString("deviceId").toString()
+        deviceType = extras.getInt("deviceType")
         Timber.i("Device ID: $deviceId")
+        Timber.i("Device Type: $deviceType")
 
         // matter device list
         viewModel.devicesUiModelLiveData.observe(this) { devicesUiModel: DevicesUiModel ->
@@ -124,6 +128,7 @@ class DeviceActivity : AppCompatActivity() {
             R.id.editDevice -> {
                 val intent = Intent(this, EditDeviceActivity::class.java)
                 intent.putExtra("deviceId", deviceId)
+                intent.putExtra("deviceType", deviceType)
                 startActivity(intent)
                 true
             }
