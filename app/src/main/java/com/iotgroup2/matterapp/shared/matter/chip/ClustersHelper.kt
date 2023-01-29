@@ -176,6 +176,9 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
    * Some mappings:
    *     namespace Groups = 0x00000004 (4)
    *     namespace OnOff = 0x00000006 (6)
+   *     namespace TemperatureMeasurement = 0x00000402 (1026)
+   *     namespace PressureMeasurement = 0x00000403 (1027)
+   *     namespace HumidityMeasurement = 0x00000405 (1029)
    *     namespace Descriptor = 0x0000001D (29)
    *     namespace OccupancySensing = 0x00000406 (1030)
    * ```
@@ -394,6 +397,7 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
                 }
                 override fun onError(ex: Exception) {
                   Timber.e(ex, "readOnOffAttribute command failure")
+                    ex.printStackTrace()
                   continuation.resumeWithException(ex)
                 }
               })
@@ -403,6 +407,143 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
   private fun getOnOffClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.OnOffCluster {
     return ChipClusters.OnOffCluster(devicePtr, endpoint)
   }
+
+    suspend fun getDeviceStateTemperatureMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStateTemperatureMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getTemperatureMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMeasuredValueAttribute(
+                    object : ChipClusters.TemperatureMeasurementCluster.MeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getTemperatureMeasurementClusterForDevice command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    private fun getTemperatureMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.TemperatureMeasurementCluster {
+        return ChipClusters.TemperatureMeasurementCluster(devicePtr, endpoint)
+    }
+
+    suspend fun getDeviceStatePressureMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStatePressureMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getPressureMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMeasuredValueAttribute(
+                    object : ChipClusters.PressureMeasurementCluster.MeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getPressureMeasurementClusterForDevice command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    private fun getPressureMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.PressureMeasurementCluster {
+        return ChipClusters.PressureMeasurementCluster(devicePtr, endpoint)
+    }
+
+    suspend fun getDeviceStateHumidityMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStateHumidityMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getHumidityMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMeasuredValueAttribute(
+                    object : ChipClusters.RelativeHumidityMeasurementCluster.MeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getHumidityMeasurementClusterForDevice.readMeasuredValueAttribute command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    private fun getHumidityMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.RelativeHumidityMeasurementCluster {
+        return ChipClusters.RelativeHumidityMeasurementCluster(devicePtr, endpoint)
+    }
+
+    suspend fun getDeviceStateHumidityMinMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStateHumidityMinMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getHumidityMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMinMeasuredValueAttribute(
+                    object : ChipClusters.RelativeHumidityMeasurementCluster.MinMeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getHumidityMeasurementClusterForDevice.readMinMeasuredValueAttribute command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    suspend fun getDeviceStateHumidityMaxMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStateHumidityMaxMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getHumidityMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMaxMeasuredValueAttribute(
+                    object : ChipClusters.RelativeHumidityMeasurementCluster.MaxMeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getHumidityMeasurementClusterForDevice.readMaxMeasuredValueAttribute command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
 
   // -----------------------------------------------------------------------------------------------
   // Administrator Commissioning Cluster (11.19)

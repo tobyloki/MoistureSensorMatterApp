@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -66,7 +67,11 @@ class MainActivity : AppCompatActivity() {
             unspecified = "unspecified",
             light = "light",
             outlet = "outlet",
-            unknown = "unknown")
+            unknown = "unknown",
+        colorTempLight = "colorTempLight",
+        temperatureSensor = "temperatureSensor",
+        pressureSensor = "pressureSensor",
+        humiditySensor = "humiditySensor")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,6 +122,9 @@ class MainActivity : AppCompatActivity() {
             // Get new FCM registration token
             val token = task.result
             Timber.i("FCM token: $token")
+
+            // make a toast
+             Toast.makeText(this, token, Toast.LENGTH_LONG).show()
         })
     }
 

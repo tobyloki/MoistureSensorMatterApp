@@ -112,7 +112,7 @@ class EditDeviceActivity : AppCompatActivity() {
         val onBtn: Button = binding.onBtn
         onBtn.setOnClickListener() {
             deviceUiModel?.let {
-                viewModel.updateDeviceStateOn(it, true)
+                viewModel.updateDeviceStateOn(it, true, null, null, null, null, null)
             }
         }
 
@@ -120,7 +120,7 @@ class EditDeviceActivity : AppCompatActivity() {
         val offBtn: Button = binding.offBtn
         offBtn.setOnClickListener() {
             deviceUiModel?.let {
-                viewModel.updateDeviceStateOn(it, false)
+                viewModel.updateDeviceStateOn(it, false, null, null, null, null, null)
             }
         }
     }

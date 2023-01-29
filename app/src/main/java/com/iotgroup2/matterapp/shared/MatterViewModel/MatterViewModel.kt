@@ -39,7 +39,13 @@ data class DeviceUiModel(
     // Whether the device is online or offline.
     var isOnline: Boolean,
     // Whether the device is on or off.
-    var isOn: Boolean
+    var isOn: Boolean,
+
+    var temperature: Int,
+    var pressure: Int,
+    var humidity: Int,
+    var thingName: Int,
+    var battery: Int
 )
 
 /**
@@ -103,10 +109,10 @@ constructor(
             }
             if (state == null) {
                 Timber.d("    deviceId setting default value for state")
-                devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false))
+                devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false, temperature = 0, pressure = 0, humidity = 0, thingName = 0, battery = 0))
             } else {
                 Timber.d("    deviceId setting its own value for state")
-                devicesUiModel.add(DeviceUiModel(device, state.online, state.on))
+                devicesUiModel.add(DeviceUiModel(device, state.online, state.on, state.temperature, state.pressure, state.humidity, state.thingName, state.battery))
             }
         }
         return devicesUiModel
@@ -152,7 +158,7 @@ constructor(
                             convertToAppDeviceType(result.commissionedDeviceDescriptor.deviceType.toLong()))
                         .build())
                 Timber.d("Commissioning: Adding device state to repository: isOnline:true isOn:false")
-                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false)
+                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false, temperature = null, pressure = null, humidity = null, thingName = null, battery = null)
                 _commissionDeviceStatus.postValue(
                     TaskStatus.Completed("Device added: [${deviceId}] [${deviceName}]"))
             } catch (e: Exception) {
@@ -167,7 +173,7 @@ constructor(
             Timber.d("*** MATTER DEVICE INFO ***")
             deviceMatterInfoList.forEachIndexed { index, deviceMatterInfo ->
                 Timber.d("Processing [[${index}] ${deviceMatterInfo}]")
-                if (index == 0) {
+                if (index == 3) {
                     if (deviceMatterInfo.types.size > 1) {
                         // TODO: Handle this properly
                         Timber.w("The device has more than one type. We're simply using the first one.")
@@ -326,6 +332,17 @@ constructor(
 
                     try {
                         var isOn = clustersHelper.getDeviceStateOnOffCluster(device.deviceId, 1)
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOn: ${isOn}]")
+                        var temperature = clustersHelper.getDeviceStateTemperatureMeasurementCluster(device.deviceId, 2)
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [temperature: ${temperature}]")
+                        var pressure = clustersHelper.getDeviceStatePressureMeasurementCluster(device.deviceId, 3)
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
+                        var humidity = clustersHelper.getDeviceStateHumidityMeasurementCluster(device.deviceId, 4)
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
+                        var thingName = clustersHelper.getDeviceStateHumidityMinMeasurementCluster(device.deviceId, 4)
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [thingName: ${thingName}]")
+                        var battery = clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(device.deviceId, 4)
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [battery: ${battery}]")
                         val isOnline: Boolean
                         if (isOn == null) {
                             Timber.e("runDevicesPeriodicUpdate: cannot get device on/off state -> OFFLINE")
@@ -334,10 +351,10 @@ constructor(
                         } else {
                             isOnline = true
                         }
-                        Timber.i("runDevicesPeriodicPing deviceId [${device.deviceId}] [${isOnline}] [${isOn}]")
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [pressure: ${pressure}], [humidity: ${humidity}], [thingName: ${thingName}], [battery: ${battery}]")
                         // TODO: only need to do it if state has changed
                         devicesStateRepository.updateDeviceState(
-                            device.deviceId, isOnline = isOnline, isOn = isOn
+                            device.deviceId, isOnline = isOnline, isOn = isOn, temperature = temperature, pressure = pressure, humidity = humidity, thingName = thingName, battery = battery
                         )
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -353,16 +370,34 @@ constructor(
     }
 
     // MARK: - State control
-    fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean) {
+    fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean, temperature: Int?, pressure: Int?, humidity: Int?, thingName: Int?, battery: Int?) {
         Timber.d("updateDeviceStateOn: Device [${deviceUiModel}]  isOn [${isOn}]")
         viewModelScope.launch {
             if (isDummyDevice(deviceUiModel.device.name)) {
                 Timber.d("Handling test device")
-                devicesStateRepository.updateDeviceState(deviceUiModel.device.deviceId, true, isOn)
+                devicesStateRepository.updateDeviceState(
+                    deviceUiModel.device.deviceId,
+                    true,
+                    isOn,
+                    temperature,
+                    pressure,
+                    humidity,
+                    thingName,
+                    battery
+                )
             } else {
                 Timber.d("Handling real device")
                 clustersHelper.setOnOffDeviceStateOnOffCluster(deviceUiModel.device.deviceId, isOn, 1)
-                devicesStateRepository.updateDeviceState(deviceUiModel.device.deviceId, true, isOn)
+                devicesStateRepository.updateDeviceState(
+                    deviceUiModel.device.deviceId,
+                    true,
+                    isOn,
+                    temperature,
+                    pressure,
+                    humidity,
+                    thingName,
+                    battery
+                )
             }
         }
     }

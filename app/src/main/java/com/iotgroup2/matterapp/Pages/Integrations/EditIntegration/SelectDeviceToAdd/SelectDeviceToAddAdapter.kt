@@ -52,7 +52,7 @@ class SelectDeviceToAddAdapter(var activity: Activity, var list : List<SelectDev
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val ifItem = list[position]
 
-        if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
+        if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
             holder.image.setImageResource(R.drawable.soil_moisture)
         } else {
             holder.image.setImageResource(R.drawable.sprinkler)
@@ -62,7 +62,7 @@ class SelectDeviceToAddAdapter(var activity: Activity, var list : List<SelectDev
 
         // Setup onClick interaction to Devices Editor page
         holder.itemView.setOnClickListener {
-            if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
+            if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                 addSensor(ifItem.id, ifItem._version)
             } else {
                 val intent = Intent(activity, EditIntegrationActuatorActivity::class.java)

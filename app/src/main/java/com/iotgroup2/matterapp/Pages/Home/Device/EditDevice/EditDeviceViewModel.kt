@@ -50,9 +50,10 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
         coroutineScope.launch {
             try {
                 Timber.i("Sending http request to graphql endpoint...")
+                Timber.i("deviceType: $deviceType")
 
                 var query = ""
-                if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
+                if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     query = "getSensor"
                 } else {
                     query = "getActuator"
@@ -89,7 +90,7 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
                 Timber.i("Sending http request to graphql endpoint...")
 
                 var query = ""
-                if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
+                if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     query = "updateSensor"
                 } else {
                     query = "updateActuator"
@@ -123,7 +124,7 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
                 Timber.i("Sending http request to graphql endpoint...")
 
                 var query = ""
-                if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
+                if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     query = "deleteSensor"
                 } else {
                     query = "deleteActuator"

@@ -57,7 +57,7 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
   val lastUpdatedDeviceState: LiveData<DeviceState>
     get() = _lastUpdatedDeviceState
 
-  suspend fun addDeviceState(deviceId: Long, isOnline: Boolean?, isOn: Boolean?) {
+  suspend fun addDeviceState(deviceId: Long, isOnline: Boolean?, isOn: Boolean?, temperature: Int?, pressure: Int?, humidity: Int?, thingName: Int?, battery: Int?) {
     val deviceState =
         DeviceState.newBuilder()
             .setDeviceId(deviceId)
@@ -71,6 +71,21 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
       if (isOn != null) {
           deviceState.setOn(isOn)
       }
+      if (temperature != null) {
+          deviceState.setTemperature(temperature)
+      }
+        if (pressure != null) {
+            deviceState.setPressure(pressure)
+        }
+        if (humidity != null) {
+            deviceState.setHumidity(humidity)
+        }
+      if (thingName != null) {
+          deviceState.setThingName(thingName)
+      }
+        if (battery != null) {
+            deviceState.setBattery(battery)
+        }
 
     val newDeviceState = deviceState.build()
 
@@ -80,7 +95,16 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
     _lastUpdatedDeviceState.value = newDeviceState
   }
 
-  suspend fun updateDeviceState(deviceId: Long, isOnline: Boolean?, isOn: Boolean?) {
+  suspend fun updateDeviceState(
+      deviceId: Long,
+      isOnline: Boolean?,
+      isOn: Boolean?,
+      temperature: Int?,
+        pressure: Int?,
+        humidity: Int?,
+      thingName: Int?,
+      battery: Int?
+  ) {
       val deviceState =
           DeviceState.newBuilder()
               .setDeviceId(deviceId)
@@ -94,6 +118,21 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
       if (isOn != null) {
           deviceState.setOn(isOn)
       }
+        if (temperature != null) {
+            deviceState.setTemperature(temperature)
+        }
+        if (pressure != null) {
+            deviceState.setPressure(pressure)
+        }
+        if (humidity != null) {
+            deviceState.setHumidity(humidity)
+        }
+        if (thingName != null) {
+            deviceState.setThingName(thingName)
+        }
+        if (battery != null) {
+            deviceState.setBattery(battery)
+        }
 
       val newDeviceState = deviceState.build()
 
@@ -114,7 +153,7 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
     if (!updateDone) {
       Timber.w(
           "We did not find device [${deviceId}] in devicesStateRepository; it should have been there???")
-      addDeviceState(deviceId, isOnline = isOnline, isOn = isOn)
+      addDeviceState(deviceId, isOnline = isOnline, isOn = isOn, temperature = temperature, pressure = pressure, humidity = humidity, thingName = thingName, battery = battery)
     }
   }
 

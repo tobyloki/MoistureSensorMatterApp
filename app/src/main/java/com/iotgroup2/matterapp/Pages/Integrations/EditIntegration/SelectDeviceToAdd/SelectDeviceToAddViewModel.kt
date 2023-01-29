@@ -64,7 +64,7 @@ class SelectDeviceToAddViewModel(private val deviceType: Int) : ViewModel(), Def
         coroutineScope.launch {
             try {
                 var queryStr = ""
-                if (deviceType == Device.DeviceType.TYPE_UNKNOWN_VALUE) {
+                if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     queryStr = "listSensors"
                 } else {
                     queryStr = "listActuators"

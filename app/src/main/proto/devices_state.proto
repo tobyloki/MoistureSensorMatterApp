@@ -33,6 +33,21 @@ message DeviceState {
     // Whether the device is off (false) or on (true). Value should be disregarded
     // if device is offline.
     bool on = 4;
+
+    // Temperature
+    int32 temperature = 5;
+
+    // Pressure
+    int32 pressure = 6;
+
+    // Humidity
+    int32 humidity = 7;
+
+    // Thing name
+    int32 thing_name = 8;
+
+    // Battery
+    int32 battery = 9;
 }
 
 message DevicesState {
