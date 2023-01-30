@@ -331,22 +331,57 @@ constructor(
                     Timber.i("runDevicesPeriodicPing deviceId [${device.deviceId}]")
 
                     try {
-                        var isOn = clustersHelper.getDeviceStateOnOffCluster(device.deviceId, 1)
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOn: ${isOn}]")
-                        var temperature = clustersHelper.getDeviceStateTemperatureMeasurementCluster(device.deviceId, 2)
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [temperature: ${temperature}]")
-                        var pressure = clustersHelper.getDeviceStatePressureMeasurementCluster(device.deviceId, 3)
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
-                        var humidity = clustersHelper.getDeviceStateHumidityMeasurementCluster(device.deviceId, 4)
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
-                        var thingName = clustersHelper.getDeviceStateHumidityMinMeasurementCluster(device.deviceId, 4)
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [thingName: ${thingName}]")
-                        var battery = clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(device.deviceId, 4)
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [battery: ${battery}]")
+                        var isOn: Boolean? = null
+                        try {
+                            isOn = clustersHelper.getDeviceStateOnOffCluster(device.deviceId, 1)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOn: ${isOn}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
+                        var temperature: Int? = null
+                        try {
+                            temperature = clustersHelper.getDeviceStateTemperatureMeasurementCluster(device.deviceId, 1)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [temperature: ${temperature}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
+                        var pressure: Int? = null
+                        try {
+                            pressure = clustersHelper.getDeviceStatePressureMeasurementCluster(device.deviceId, 2)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
+                        var humidity: Int? = null
+                        try {
+                            humidity = clustersHelper.getDeviceStateHumidityMeasurementCluster(device.deviceId, 3)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
+                        var thingName: Int? = null
+                        try {
+                            thingName = clustersHelper.getDeviceStateHumidityMinMeasurementCluster(device.deviceId, 3)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [thingName: ${thingName}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
+                        var battery: Int? = null
+                        try {
+                            battery = clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(device.deviceId, 3)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [battery: ${battery}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
                         val isOnline: Boolean
-                        if (isOn == null) {
-                            Timber.e("runDevicesPeriodicUpdate: cannot get device on/off state -> OFFLINE")
-                            isOn = false
+                        if (thingName == null) {
+                            Timber.e("runDevicesPeriodicUpdate: cannot get device thingName -> OFFLINE")
                             isOnline = false
                         } else {
                             isOnline = true

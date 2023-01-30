@@ -115,8 +115,9 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
 
     fun deleteDevice() {
         if (_version == null) {
-            Timber.e("Version is null, not deleting")
-            return
+//            Timber.e("Version is null, not deleting")
+//            return
+            Timber.e("Version is null, but still proceeding")
         }
 
         coroutineScope.launch {

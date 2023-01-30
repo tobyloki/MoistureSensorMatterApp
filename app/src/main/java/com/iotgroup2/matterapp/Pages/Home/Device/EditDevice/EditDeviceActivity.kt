@@ -108,21 +108,21 @@ class EditDeviceActivity : AppCompatActivity() {
             }
         }
 
-        // on button
-        val onBtn: Button = binding.onBtn
-        onBtn.setOnClickListener() {
-            deviceUiModel?.let {
-                viewModel.updateDeviceStateOn(it, true, null, null, null, null, null)
-            }
-        }
-
-        // off button
-        val offBtn: Button = binding.offBtn
-        offBtn.setOnClickListener() {
-            deviceUiModel?.let {
-                viewModel.updateDeviceStateOn(it, false, null, null, null, null, null)
-            }
-        }
+//        // on button
+//        val onBtn: Button = binding.onBtn
+//        onBtn.setOnClickListener() {
+//            deviceUiModel?.let {
+//                viewModel.updateDeviceStateOn(it, true, null, null, null, null, null)
+//            }
+//        }
+//
+//        // off button
+//        val offBtn: Button = binding.offBtn
+//        offBtn.setOnClickListener() {
+//            deviceUiModel?.let {
+//                viewModel.updateDeviceStateOn(it, false, null, null, null, null, null)
+//            }
+//        }
     }
 
     override fun onResume() {
