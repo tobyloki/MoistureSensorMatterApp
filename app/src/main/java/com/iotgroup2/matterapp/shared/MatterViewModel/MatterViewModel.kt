@@ -173,7 +173,8 @@ constructor(
             Timber.d("*** MATTER DEVICE INFO ***")
             deviceMatterInfoList.forEachIndexed { index, deviceMatterInfo ->
                 Timber.d("Processing [[${index}] ${deviceMatterInfo}]")
-                if (index == 3) {
+                // TODO: double check this actually works for real
+                if (index == 2) {   // first is temperature, second is pressure, third is humidity
                     if (deviceMatterInfo.types.size > 1) {
                         // TODO: Handle this properly
                         Timber.w("The device has more than one type. We're simply using the first one.")

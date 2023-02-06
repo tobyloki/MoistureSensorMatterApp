@@ -75,7 +75,7 @@ class EditIntegrationActivity : AppCompatActivity() {
         ifAddBtn.setOnClickListener {
             val intent = Intent(this, SelectDeviceToAddActivity::class.java)
             intent.putExtra("integrationId", integrationId)
-            intent.putExtra("deviceType", Device.DeviceType.TYPE_UNKNOWN_VALUE)
+            intent.putExtra("deviceType", Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE)
             startActivity(intent)
         }
         thenAddBtn.setOnClickListener {

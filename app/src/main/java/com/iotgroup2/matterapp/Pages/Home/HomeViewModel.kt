@@ -1,6 +1,8 @@
 package com.iotgroup2.matterapp.Pages.Home
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.*
+import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Device.DeviceType
 import com.iotgroup2.matterapp.shared.MatterViewModel.DeviceUiModel
 import kotlinx.coroutines.*
@@ -46,7 +48,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
         constructor()
     }
 
-    class Item(var id: String, var name: String) {
+    class Item(var id: String, var name: String, var type: Int) {
     }
 
     private var itemList = mutableListOf<Item>()
@@ -56,6 +58,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
         super.onCreate(owner)
     }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
 
@@ -95,12 +98,12 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                     try {
                         val _deleted = sensor.getBoolean("_deleted")
                         if (!_deleted) {
-                            itemList.add(Item(sensor.getString("id"), sensor.getString("name")))
+                            itemList.add(Item(sensor.getString("id"), sensor.getString("name"), Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE))
                         }
                     } catch (e: Exception) {
 //                        Timber.e(e)
                         // means _deleted is null, therefore it is false
-                        itemList.add(Item(sensor.getString("id"), sensor.getString("name")))
+                        itemList.add(Item(sensor.getString("id"), sensor.getString("name"), Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE))
                     }
                 }
                 for (i in 0 until actuators.length()) {
@@ -108,12 +111,12 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                     try {
                     val _deleted = actuator.getBoolean("_deleted")
                         if (!_deleted) {
-                            itemList.add(Item(actuator.getString("id"), actuator.getString("name")))
+                            itemList.add(Item(actuator.getString("id"), actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE))
                         }
                     } catch (e: Exception) {
 //                        Timber.e(e)
                         // means _deleted is null, therefore it is false
-                        itemList.add(Item(actuator.getString("id"), actuator.getString("name")))
+                        itemList.add(Item(actuator.getString("id"), actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE))
                     }
                 }
 
@@ -162,12 +165,16 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
             for (matterDevice in matterDevices) {
                 val id = matterDevice.device.deviceId.toString()
                 val name = matterDevice.device.name
-                val deviceType = matterDevice.device.deviceTypeValue
+                var deviceType = matterDevice.device.deviceTypeValue
+                Timber.i("asdf device type: $deviceType")
 
                 var addedToBackend = false
                 for (item in itemList) {
                     if (item.id == matterDevice.device.deviceId.toString()) {
                         addedToBackend = true
+                        // typically, if device has already been added, the deviceType will always be 1
+                        // so get the correct deviceType from itemList, which was determined from backend data
+                        deviceType = item.type
                         break
                     }
                 }
@@ -195,7 +202,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                 Timber.i("Sending http request to graphql endpoint...")
 
                 var query = ""
-                if (deviceType == DeviceType.TYPE_UNKNOWN_VALUE) {
+                if (deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     query = "createSensor"
                 } else {
                     query = "createActuator"

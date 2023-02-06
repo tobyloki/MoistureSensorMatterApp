@@ -38,7 +38,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/nameTextView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="Garden Node" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 </layout>

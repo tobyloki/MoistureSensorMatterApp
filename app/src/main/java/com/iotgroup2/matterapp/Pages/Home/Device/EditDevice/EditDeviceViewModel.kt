@@ -137,6 +137,7 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
                         "    id\n" +
                         "  }\n" +
                         "}")
+                Timber.i("json: $json")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                 val httpResponse = HTTP.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")

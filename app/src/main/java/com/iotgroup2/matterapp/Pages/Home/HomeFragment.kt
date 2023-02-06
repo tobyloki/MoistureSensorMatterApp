@@ -153,18 +153,22 @@ class HomeFragment : Fragment() {
     }
 
     private fun showNewDeviceAlertDialog(activityResult: ActivityResult?) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setView(newDeviceAlertDialogBinding.root)
-            .setTitle("New device information")
-            .setPositiveButton(resources.getString(R.string.ok)) { _, _ ->
-                // Extract the info entered by user and process it.
-                val nameTextView: TextInputEditText = newDeviceAlertDialogBinding.nameTextView
-                val deviceName = nameTextView.text.toString()
-                viewModel.commissionDeviceSucceeded(activityResult!!, deviceName)
-            }
-            .setCancelable(false)
-            .create()
-            .show()
+        try {
+            MaterialAlertDialogBuilder(requireContext())
+                .setView(newDeviceAlertDialogBinding.root)
+                .setTitle("New device information")
+                .setPositiveButton(resources.getString(R.string.ok)) { _, _ ->
+                    // Extract the info entered by user and process it.
+                    val nameTextView: TextInputEditText = newDeviceAlertDialogBinding.nameTextView
+                    val deviceName = nameTextView.text.toString().trim()
+                    viewModel.commissionDeviceSucceeded(activityResult!!, deviceName)
+                }
+                .setCancelable(false)
+                .create()
+                .show()
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
     }
 
     override fun onResume() {
