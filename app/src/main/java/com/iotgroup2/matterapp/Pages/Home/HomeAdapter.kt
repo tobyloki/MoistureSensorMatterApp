@@ -40,7 +40,7 @@ class HomeAdapter(var context: Context, var devices : List<HomeViewModel.Devices
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val device = devices[position]
 
-        holder.name.text = device.label
+        holder.name.text = device.name
         holder.onlineIcon.setTextColor(if (device.online) getColor(context, R.color.online) else getColor(context, R.color.offline))
         holder.online.text = if (device.online) "Online" else "Offline"
 

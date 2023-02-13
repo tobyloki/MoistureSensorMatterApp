@@ -32,23 +32,21 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
     // Each Device List Entity
     class DevicesListItem {
         var id: String = ""
-        var label: String = ""
+        var name: String = ""
         var type: Int = DeviceType.TYPE_UNSPECIFIED_VALUE
-        var state: Boolean = false
         var online: Boolean = false
+        var thingName: String = ""
 
-        constructor(id: String, label: String, type: Int, state: Boolean, online: Boolean) {
+        constructor(id: String, label: String, type: Int, online: Boolean, thingName: String) {
             this.id = id
-            this.label = label
+            this.name = label
             this.type = type
-            this.state = state
             this.online = online
+            this.thingName = thingName
         }
-
-        constructor()
     }
 
-    class Item(var id: String, var name: String, var type: Int) {
+    class Item(var id: String, var thingName: String, var name: String, var type: Int, var _version: Int) {
     }
 
     private var itemList = mutableListOf<Item>()
@@ -71,8 +69,10 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         "  listSensors {\n" +
                         "    items {\n" +
                         "      id\n" +
+                        "      thingName\n" +
                         "      name\n" +
                         "      _deleted\n" +
+                        "      _version\n" +
                         "    }\n" +
                         "  }\n" +
                         "  listActuators {\n" +
@@ -80,6 +80,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         "      id\n" +
                         "      name\n" +
                         "      _deleted\n" +
+                        "      _version\n" +
                         "    }\n" +
                         "  }\n" +
                         "}")
@@ -95,28 +96,31 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
 
                 for (i in 0 until sensors.length()) {
                     val sensor = sensors.getJSONObject(i)
+                    val thingName = sensor.getString("thingName")
+                    val _version = sensor.getInt("_version")
                     try {
                         val _deleted = sensor.getBoolean("_deleted")
                         if (!_deleted) {
-                            itemList.add(Item(sensor.getString("id"), sensor.getString("name"), Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE))
+                            itemList.add(Item(sensor.getString("id"), thingName, sensor.getString("name"), Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE, _version))
                         }
                     } catch (e: Exception) {
 //                        Timber.e(e)
                         // means _deleted is null, therefore it is false
-                        itemList.add(Item(sensor.getString("id"), sensor.getString("name"), Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE))
+                        itemList.add(Item(sensor.getString("id"), thingName, sensor.getString("name"), Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE, _version))
                     }
                 }
                 for (i in 0 until actuators.length()) {
                     val actuator = actuators.getJSONObject(i)
+                    val _version = actuator.getInt("_version")
                     try {
                     val _deleted = actuator.getBoolean("_deleted")
                         if (!_deleted) {
-                            itemList.add(Item(actuator.getString("id"), actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE))
+                            itemList.add(Item(actuator.getString("id"), "", actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE, _version))
                         }
                     } catch (e: Exception) {
 //                        Timber.e(e)
                         // means _deleted is null, therefore it is false
-                        itemList.add(Item(actuator.getString("id"), actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE))
+                        itemList.add(Item(actuator.getString("id"), "", actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE, _version))
                     }
                 }
 
@@ -133,18 +137,18 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                 delay(1000)
             }
 
-            for (matterDevice in matterDevices) {
-                val device = _devices.value!!.find { it.id == matterDevice.device.deviceId.toString() }
-                if (device != null) {
-                    device.state = matterDevice.isOn
-                    device.online = matterDevice.isOnline
-
+//            for (matterDevice in matterDevices) {
+//                val device = _devices.value!!.find { it.id == matterDevice.device.deviceId.toString() }
+//                if (device != null) {
+////                    device.state = matterDevice.isOn
+//                    device.online = matterDevice.isOnline
+//
 //                    Timber.i("Device: ${matterDevice.device.deviceId}, State: ${matterDevice.isOn}, Online: ${matterDevice.isOnline}")
-                }
+//                }
 
                 // update _devices
                 _devices.postValue(_devices.value)
-            }
+//            }
         }
     }
 
@@ -160,10 +164,11 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
             }
             Timber.i("step 2")
 
-            val mutableDevicesList = mutableListOf<DevicesListItem>()
+            val mutableDevicesList = mutableListOf<HomeViewModel.DevicesListItem>()
 
             for (matterDevice in matterDevices) {
                 val id = matterDevice.device.deviceId.toString()
+                val thingName = matterDevice.thingName
                 val name = matterDevice.device.name
                 var deviceType = matterDevice.device.deviceTypeValue
                 Timber.i("asdf device type: $deviceType")
@@ -179,16 +184,42 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                     }
                 }
 
-                Timber.i("Device: $id, Name: $name, Type: $deviceType, Added: $addedToBackend")
-                if (!addedToBackend) {
-                    Timber.i("New device found: ($id, $name, $deviceType). Adding to backend...")
+                Timber.i("Device: $id, ThingName: $thingName, Name: $name, Type: $deviceType, Added: $addedToBackend")
+
+                // if addedToBackend is true, check if thingName is has changed
+                if (addedToBackend) {
+                    val item = itemList.find { it.id == matterDevice.device.deviceId.toString() }
+                    if (item != null) {
+                        // store thingName in hex format (e.g. 0506)
+                        val thingNameHex = String.format("%04x", thingName)
+
+                        if (item.thingName != thingNameHex) {
+                            if (deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
+                                if(thingName != 0) {
+                                    Timber.i("Device thingName has changed. Updating thingName from ${item.thingName} to $thingNameHex")
+
+                                    updateThingName(id, thingNameHex, item._version);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Timber.i("New device found: ($id, $thingName, $name, $deviceType). Adding to backend...")
 
                     // add to backend
-                    addDeviceToBackend(id, name, deviceType)
+                    addDeviceToBackend(id, thingName.toString(), name, deviceType)
                 }
 
                 // add to ui list
-                mutableDevicesList.add(DevicesListItem(id, name, deviceType, matterDevice.isOn, matterDevice.isOnline))
+                mutableDevicesList.add(
+                    HomeViewModel.DevicesListItem(
+                        id,
+                        name,
+                        deviceType,
+                        matterDevice.isOnline,
+                        thingName.toString()
+                    )
+                );
             }
 
             // Send event to update Devices View
@@ -196,7 +227,28 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
         }
     }
 
-    private fun addDeviceToBackend(id: String, name: String, deviceType: Int) {
+    private fun updateThingName(id: String, thingName: String, _version: Int) {
+        coroutineScope.launch {
+            try {
+                Timber.i("Sending http request to graphql endpoint...")
+
+                val json = JSONObject()
+                json.put("query", "mutation MyMutation {\n" +
+                        "  updateSensor(input: {id: \"$id\", thingName: \"$thingName\", _version: $_version}) {\n" +
+                        "    id\n" +
+                        "  }\n" +
+                        "}")
+                Timber.i("json: $json")
+                val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                val httpResponse = HTTP.retrofitService.query(body).await()
+                Timber.i("data: $httpResponse")
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+    }
+
+    private fun addDeviceToBackend(id: String, thingName: String, name: String, deviceType: Int) {
         coroutineScope.launch {
             try {
                 Timber.i("Sending http request to graphql endpoint...")
@@ -210,10 +262,11 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
 
                 val json = JSONObject()
                 json.put("query", "mutation MyMutation {\n" +
-                        "  $query(input: {id: \"$id\", name: \"$name\"}) {\n" +
+                        "  $query(input: {id: \"$id\", thingName: \"$thingName\", name: \"$name\"}) {\n" +
                         "    id\n" +
                         "  }\n" +
                         "}")
+                Timber.i("json: $json")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                 val httpResponse = HTTP.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
