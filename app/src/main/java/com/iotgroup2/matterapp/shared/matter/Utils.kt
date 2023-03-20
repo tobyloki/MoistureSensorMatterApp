@@ -237,13 +237,6 @@ fun stripLinkLocalInIpAddress(ipAddress: String): String {
 // -------------------------------------------------------------------------------------------------
 // Constants used when creating devices on the app's fabric.
 
-// Dummy device creation
-const val DUMMY_VENDOR_ID = "777"
-const val DUMMY_PRODUCT_ID = "888"
-const val DUMMY_DEVICE_NAME_PREFIX = "[Test-"
-const val DUMMY_DEVICE_NAME_SUFFIX = "]"
-const val DUMMY_DEVICE_ROOM_PREFIX = "Room-"
-
 // Shared device creation
 const val SHARED_DEVICE_NAME_PREFIX = "Shared-"
 const val SHARED_DEVICE_NAME_SUFFIX = ""
@@ -251,10 +244,6 @@ const val SHARED_DEVICE_ROOM_PREFIX = "Room-"
 
 // Temporary device name used when commissioning the device to the 3P fabric.
 const val REAL_DEVICE_NAME_PREFIX = "Real-"
-
-fun isDummyDevice(name: String): Boolean {
-  return name.startsWith(DUMMY_DEVICE_NAME_PREFIX)
-}
 
 // -------------------------------------------------------------------------------------------------
 // Dialogs
@@ -293,20 +282,22 @@ const val MIN_COMMISSIONING_WINDOW_EXPIRATION_SECONDS = 20
 // -------------------------------------------------------------------------------------------------
 // Constants to modify the behavior of the app.
 
-// Period updates interval.
-// Set to -1 to disable the periodic update calls.
-const val PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS = 10
-const val PERIODIC_UPDATE_INTERVAL_DEVICE_SCREEN_SECONDS = 2
-
-// Whether the device should be queried right after commissioning.
-const val QUERY_DEVICE_RIGHT_AFTER_COMMISSIONING = false
-
-// Whether device sharing should be triggered for dummy devices.
-// Allows to see what the shar sheet looks like without have a real device commissioned.
-const val ALLOW_DEVICE_SHARING_ON_DUMMY_DEVICE = true
-
 // Whether the on/off switch is disabled when the device is offline.
 const val ON_OFF_SWITCH_DISABLED_WHEN_DEVICE_OFFLINE = false
+// ----- Periodic monitoring of device state changes -----
+// Modes supported for monitoring state changes.
+enum class StateChangesMonitoringMode {
+  // Subscription is what should normally be used.
+  Subscription,
+  // Left for historical reasons when we had issues with Subscription.
+  PeriodicRead
+}
+val STATE_CHANGES_MONITORING_MODE = StateChangesMonitoringMode.Subscription
+// Intervals for PeriodicRead mode.
+const val PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS = 10
+const val PERIODIC_READ_INTERVAL_DEVICE_SCREEN_SECONDS = 2
+
+// ----- Device Sharing -----
 
 // Whether DeviceSharing does commissioning with GPS.
 // Alternative is using DNS-SD to discover the device and get its IP address, and then

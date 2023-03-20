@@ -98,6 +98,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                     val sensor = sensors.getJSONObject(i)
                     val thingName = sensor.getString("thingName")
                     val _version = sensor.getInt("_version")
+                    Timber.i("thingName: $thingName")
                     try {
                         val _deleted = sensor.getBoolean("_deleted")
                         if (!_deleted) {
@@ -123,6 +124,26 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         itemList.add(Item(actuator.getString("id"), "", actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE, _version))
                     }
                 }
+
+                // show preliminary list
+                val mutableDevicesList = mutableListOf<HomeViewModel.DevicesListItem>()
+
+                for (item in itemList) {
+                    // device is not added to ui list, so add it
+                    Timber.i("Device ${item.id} is not added to ui list. Adding to ui list anyway so that it can still be manually deleted.")
+                    mutableDevicesList.add(
+                        HomeViewModel.DevicesListItem(
+                            item.id,
+                            item.name,
+                            item.type,
+                            false,
+                            item.thingName
+                        )
+                    );
+                }
+
+                // Send event to update Devices View
+                _devices.postValue(mutableDevicesList)
 
                 loadedList = true
             } catch (e: Exception) {
@@ -222,6 +243,25 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                 );
             }
 
+            for (item in itemList) {
+                // check if device is added to ui list
+                val device = mutableDevicesList.find { it.id == item.id }
+
+                if (device == null) {
+                    // device is not added to ui list, so add it
+                    Timber.i("Device ${item.id} is not added to ui list. Adding to ui list anyway so that it can still be manually deleted.")
+                    mutableDevicesList.add(
+                        HomeViewModel.DevicesListItem(
+                            item.id,
+                            item.name,
+                            item.type,
+                            false,
+                            item.thingName
+                        )
+                    );
+                }
+            }
+
             // Send event to update Devices View
             _devices.postValue(mutableDevicesList)
         }
@@ -254,15 +294,17 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                 Timber.i("Sending http request to graphql endpoint...")
 
                 var query = ""
+                var thingNameQuery = ""
                 if (deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     query = "createSensor"
+                    thingNameQuery = "thingName: \"$thingName\","
                 } else {
                     query = "createActuator"
                 }
 
                 val json = JSONObject()
                 json.put("query", "mutation MyMutation {\n" +
-                        "  $query(input: {id: \"$id\", thingName: \"$thingName\", name: \"$name\"}) {\n" +
+                        "  $query(input: {id: \"$id\", $thingNameQuery name: \"$name\"}) {\n" +
                         "    id\n" +
                         "  }\n" +
                         "}")

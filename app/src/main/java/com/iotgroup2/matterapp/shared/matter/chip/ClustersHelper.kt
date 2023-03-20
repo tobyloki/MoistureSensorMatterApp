@@ -44,54 +44,68 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
   // Convenience functions
 
   /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
-  suspend fun fetchDeviceMatterInfo(nodeId: Long, endpoint: Int): List<DeviceMatterInfo> {
-    Timber.d("fetchDeviceMatterInfo(): nodeId [${nodeId}]")
-    val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
-    val connectedDevicePtr =
-        try {
-          chipClient.getConnectedDevicePointer(nodeId)
-        } catch (e: IllegalStateException) {
-          Timber.e("Can't get connectedDevicePointer.")
-          return emptyList()
-        }
-
-    val partsListAttribute = readDescriptorClusterPartsListAttribute(connectedDevicePtr, endpoint)
-    Timber.d("partsListAttribute [${partsListAttribute}]")
-
-    // For each part (endpoint)
-    partsListAttribute?.forEach { part ->
-      Timber.d("part [$part] is [${part.javaClass}]")
-      val endpointInt =
-          when (part) {
-            is Int -> part.toInt()
-            else -> return@forEach
+  suspend fun fetchDeviceMatterInfo(nodeId: Long): List<DeviceMatterInfo> {
+      Timber.d("fetchDeviceMatterInfo(): nodeId [${nodeId}]")
+      val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
+      val connectedDevicePtr =
+          try {
+              chipClient.getConnectedDevicePointer(nodeId)
+          } catch (e: IllegalStateException) {
+              Timber.e("Can't get connectedDevicePointer.")
+              return emptyList()
           }
-      Timber.d("Processing part [$part]")
-
-      // DeviceListAttribute
-      val deviceListAttribute =
-          readDescriptorClusterDeviceListAttribute(connectedDevicePtr, endpointInt)
-      val types = arrayListOf<Long>()
-      deviceListAttribute.forEach { types.add(it.type) }
-
-      // ServerListAttribute
-      val serverListAttribute =
-          readDescriptorClusterServerListAttribute(connectedDevicePtr, endpointInt)
-      val serverClusters = arrayListOf<Any>()
-      serverListAttribute.forEach { serverClusters.add(it) }
-
-      // ClientListAttribute
-      val clientListAttribute =
-          readDescriptorClusterClientListAttribute(connectedDevicePtr, endpointInt)
-      val clientClusters = arrayListOf<Any>()
-      clientListAttribute.forEach { clientClusters.add(it) }
-
-      // Build the DeviceMatterInfo
-      val deviceMatterInfo = DeviceMatterInfo(endpointInt, types, serverClusters, clientClusters)
-      matterDeviceInfoList.add(deviceMatterInfo)
-    }
-    return matterDeviceInfoList
+      fetchDeviceMatterInfo(nodeId, connectedDevicePtr, 0, matterDeviceInfoList)
+      return matterDeviceInfoList
   }
+
+    /** Fetches MatterDeviceInfo for a specific endpoint. */
+    suspend fun fetchDeviceMatterInfo(
+        nodeId: Long,
+        connectedDevicePtr: Long,
+        endpointInt: Int,
+        matterDeviceInfoList: ArrayList<DeviceMatterInfo>
+    ) {
+        Timber.d("fetchDeviceMatterInfo(): nodeId [${nodeId}] endpoint [$endpointInt]")
+
+        val partsListAttribute =
+            readDescriptorClusterPartsListAttribute(connectedDevicePtr, endpointInt)
+        Timber.d("partsListAttribute [${partsListAttribute}]")
+
+        // DeviceListAttribute
+        val deviceListAttribute =
+            readDescriptorClusterDeviceListAttribute(connectedDevicePtr, endpointInt)
+        val types = arrayListOf<Long>()
+        deviceListAttribute.forEach { types.add(it.deviceType) }
+
+        // ServerListAttribute
+        val serverListAttribute =
+            readDescriptorClusterServerListAttribute(connectedDevicePtr, endpointInt)
+        val serverClusters = arrayListOf<Any>()
+        serverListAttribute.forEach { serverClusters.add(it) }
+
+        // ClientListAttribute
+        val clientListAttribute =
+            readDescriptorClusterClientListAttribute(connectedDevicePtr, endpointInt)
+        val clientClusters = arrayListOf<Any>()
+        clientListAttribute.forEach { clientClusters.add(it) }
+
+        // Build the DeviceMatterInfo
+        val deviceMatterInfo = DeviceMatterInfo(endpointInt, types, serverClusters, clientClusters)
+        matterDeviceInfoList.add(deviceMatterInfo)
+
+        // Recursive call for the parts supported by the endpoint.
+        // For each part (endpoint)
+        partsListAttribute?.forEach { part ->
+            Timber.d("part [$part] is [${part.javaClass}]")
+            val endpointInt =
+                when (part) {
+                    is Int -> part.toInt()
+                    else -> return@forEach
+                }
+            Timber.d("Processing part [$part]")
+            fetchDeviceMatterInfo(nodeId, connectedDevicePtr, endpointInt, matterDeviceInfoList)
+        }
+    }
 
   // -----------------------------------------------------------------------------------------------
   // DescriptorCluster functions
@@ -267,7 +281,7 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
     return suspendCoroutine { continuation ->
       getBasicClusterForDevice(connectedDevicePtr, endpoint)
           .readVendorIDAttribute(
-              object : ChipClusters.BasicCluster.VendorIDAttributeCallback {
+              object : ChipClusters.ApplicationBasicCluster.VendorIDAttributeCallback {
                 override fun onSuccess(value: Int?) {
                   continuation.resume(value)
                 }
@@ -290,7 +304,7 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
     return suspendCoroutine { continuation ->
       getBasicClusterForDevice(connectedDevicePtr, endpoint)
           .readAttributeListAttribute(
-              object : ChipClusters.BasicCluster.AttributeListAttributeCallback {
+              object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
                 override fun onSuccess(values: MutableList<Long>) {
                   continuation.resume(values)
                 }
@@ -301,8 +315,8 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
     }
   }
 
-  private fun getBasicClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.BasicCluster {
-    return ChipClusters.BasicCluster(devicePtr, endpoint)
+  private fun getBasicClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.ApplicationBasicCluster {
+    return ChipClusters.ApplicationBasicCluster(devicePtr, endpoint)
   }
 
   // -----------------------------------------------------------------------------------------------

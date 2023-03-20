@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <item
+        android:id="@+id/menu"
+        android:icon="@drawable/ic_baseline_more_vert_24"
+        android:title=""
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/editDevice"
+                android:icon="@drawable/ic_baseline_edit_24"
+                android:title="Edit"
+                app:showAsAction="always" />
+            <item
+                android:id="@+id/shareDevice"
+                android:icon="@drawable/ic_baseline_share_24"
+                android:title="Share Device"
+                app:showAsAction="always" />
+        </menu>
+    </item>
+</menu>

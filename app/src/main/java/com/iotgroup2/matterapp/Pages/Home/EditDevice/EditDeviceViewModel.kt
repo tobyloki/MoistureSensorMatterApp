@@ -1,4 +1,4 @@
-package com.iotgroup2.matterapp.Pages.Home.Device.EditDevice
+package com.iotgroup2.matterapp.Pages.Home.EditDevice
 
 import android.view.InputDevice.getDevice
 import androidx.lifecycle.*

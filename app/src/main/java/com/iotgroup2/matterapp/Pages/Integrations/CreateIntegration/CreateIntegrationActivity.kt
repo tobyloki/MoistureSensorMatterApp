@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputLayout
-import com.iotgroup2.matterapp.Pages.Home.Device.EditDevice.EditDeviceActivity
+import com.iotgroup2.matterapp.Pages.Home.EditDevice.EditDeviceActivity
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActivity
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationViewModel
 import com.iotgroup2.matterapp.R

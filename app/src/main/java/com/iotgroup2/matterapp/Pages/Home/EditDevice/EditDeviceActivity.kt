@@ -1,4 +1,4 @@
-package com.iotgroup2.matterapp.Pages.Home.Device.EditDevice
+package com.iotgroup2.matterapp.Pages.Home.EditDevice
 
 import android.content.Intent
 import android.os.Bundle
@@ -17,7 +17,7 @@ import com.iotgroup2.matterapp.databinding.ActivityDeviceEditBinding
 import com.iotgroup2.matterapp.shared.MatterViewModel.DeviceUiModel
 import com.iotgroup2.matterapp.shared.MatterViewModel.DevicesUiModel
 import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
-import com.iotgroup2.matterapp.shared.matter.PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS
+import com.iotgroup2.matterapp.shared.matter.PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS
 import dagger.hilt.android.AndroidEntryPoint
 import shared.Models.DeviceModel
 import timber.log.Timber
@@ -47,6 +47,10 @@ class EditDeviceActivity : AppCompatActivity() {
         _binding = ActivityDeviceEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        nameFieldLayout = binding.nameFieldLayout
+        cancelBtn = binding.cancelBtn
+        saveBtn = binding.saveBtn
+
         /* Initialize Data */
         val extras: Bundle? = intent.extras
         if(extras == null)
@@ -56,28 +60,40 @@ class EditDeviceActivity : AppCompatActivity() {
         Timber.i("Device ID: $deviceId")
         Timber.i("Device Type: $deviceType")
 
-        devicesEditorViewModel = ViewModelProvider(this, EditDeviceViewModelFactory(deviceId, deviceType)).get(EditDeviceViewModel::class.java)
+        val deviceName = extras.getString("deviceName")
+
+        if (deviceName != null) {
+            nameFieldLayout.editText?.setText(deviceName)
+        }
+
+        devicesEditorViewModel = ViewModelProvider(this, EditDeviceViewModelFactory(deviceId, deviceType)).get(
+            EditDeviceViewModel::class.java)
         lifecycle.addObserver(devicesEditorViewModel)
 
         devicesEditorViewModel.finishedSaving.observe(this) {
             if (it) {
+                // send result name back to main activity
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("deviceName", nameFieldLayout.editText?.text.toString().trim())
+                setResult(RESULT_OK, intent)
+
                 goBack()
             }
         }
         devicesEditorViewModel.finishedDeleting.observe(this) {
             if (it) {
-                // remove from matter list
-                viewModel.removeDevice(deviceId.toLong())
+                try {
+                    // remove from matter list
+                    viewModel.removeDevice(deviceId.toLong())
+                } catch (e: Exception) {
+                    Timber.e("Error removing device from matter list: ${e.message}")
+                }
 
                 val intent = Intent(this, MainActivity::class.java)
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 startActivity(intent)
             }
         }
-
-        nameFieldLayout = binding.nameFieldLayout
-        cancelBtn = binding.cancelBtn
-        saveBtn = binding.saveBtn
 
         /* Cancel Button */
         cancelBtn.setOnClickListener {
@@ -86,13 +102,15 @@ class EditDeviceActivity : AppCompatActivity() {
 
         /* Save Button */
         saveBtn.setOnClickListener() {
-            if (deviceUiModel == null) {
+            val name = nameFieldLayout.editText?.text.toString().trim()
+            devicesEditorViewModel.saveName(name)
+
+            if (deviceUiModel != null) {
+                viewModel.updateDeviceName(deviceId.toLong(), name)
+            } else {
                 Timber.e("Device UI Model is null")
                 return@setOnClickListener
             }
-            val name = binding.nameFieldLayout.editText?.text.toString().trim()
-            viewModel.updateDeviceName(deviceId.toLong(), name)
-            devicesEditorViewModel.saveName(name)
         }
 
         // matter device list
@@ -127,16 +145,16 @@ class EditDeviceActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS != -1) {
+        if (PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS != -1) {
             Timber.i("Starting periodic ping on devices")
-            viewModel.startDevicesPeriodicPing()
+            viewModel.startMonitoringStateChanges()
         }
     }
 
     override fun onPause() {
         super.onPause()
         Timber.i("onPause(): Stopping periodic ping on devices")
-        viewModel.stopDevicesPeriodicPing()
+        viewModel.stopMonitoringStateChanges()
     }
 
     private fun pageLoadFail(msg: String) {

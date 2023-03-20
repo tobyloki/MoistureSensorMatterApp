@@ -16,6 +16,7 @@
 
 package com.iotgroup2.matterapp.shared.matter.data
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -57,6 +58,7 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
   val lastUpdatedDeviceState: LiveData<DeviceState>
     get() = _lastUpdatedDeviceState
 
+  @SuppressLint("SuspiciousIndentation")
   suspend fun addDeviceState(deviceId: Long, isOnline: Boolean?, isOn: Boolean?, temperature: Int?, pressure: Int?, humidity: Int?, thingName: Int?, battery: Int?) {
     val deviceState =
         DeviceState.newBuilder()
@@ -160,4 +162,10 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
   suspend fun getAllDevicesState(): DevicesState {
     return devicesStateFlow.first()
   }
+
+    suspend fun clearAllData() {
+        devicesStateDataStore.updateData { devicesStateList ->
+            devicesStateList.toBuilder().clear().build()
+        }
+    }
 }

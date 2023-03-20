@@ -3,9 +3,13 @@ package com.iotgroup2.matterapp.Pages.Home
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -14,24 +18,43 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import chip.devicecontroller.AttestationInfo
+import chip.devicecontroller.DeviceAttestationDelegate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
+import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.shared.MatterViewModel.DevicesUiModel
 import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.databinding.FragmentHomeBinding
 import com.iotgroup2.matterapp.databinding.FragmentNewDeviceBinding
-import com.iotgroup2.matterapp.shared.matter.PERIODIC_UPDATE_INTERVAL_DEVICE_SCREEN_SECONDS
+import com.iotgroup2.matterapp.shared.matter.PERIODIC_READ_INTERVAL_DEVICE_SCREEN_SECONDS
 import com.iotgroup2.matterapp.shared.matter.TaskStatus
+import com.iotgroup2.matterapp.shared.matter.chip.ChipClient
+import com.iotgroup2.matterapp.shared.matter.data.DevicesRepository
+import com.iotgroup2.matterapp.shared.matter.data.DevicesStateRepository
+import com.iotgroup2.matterapp.shared.matter.data.UserPreferencesRepository
 import com.iotgroup2.matterapp.shared.matter.isMultiAdminCommissioning
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
+
+    @Inject
+    internal lateinit var devicesRepository: DevicesRepository
+    @Inject
+    internal lateinit var devicesStateRepository: DevicesStateRepository
+    @Inject
+    internal lateinit var userPreferencesRepository: UserPreferencesRepository
+    @Inject
+    internal lateinit var chipClient: ChipClient
 
     private lateinit var _binding: FragmentHomeBinding
 
@@ -48,6 +71,12 @@ class HomeFragment : Fragment() {
 
     private lateinit var spinner : Spinner
 
+    // Tells whether a device attestation failure was ignored.
+    // This is used in the "Device information" screen to warn the user about that fact.
+    // We're doing it this way as we cannot ask permission to the user while the
+    // decision has to be made because UI is fully controlled by GPS at that point.
+    private var deviceAttestationFailureIgnored = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -61,10 +90,16 @@ class HomeFragment : Fragment() {
         lifecycle.addObserver(matterDeviceViewModel)
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
+        // We need our own device attestation delegate as we currently only support attestation
+        // of test Matter devices. This DeviceAttestationDelegate makes it possible to ignore device
+        // attestation failures, which happen if commissioning production devices.
+        // TODO: Look into supporting different Root CAs.
+        setDeviceAttestationDelegate()
+
         spinner = _binding.spinner
 
-        // populate spinner with "Garden Node" and "Controller"
-        val spinnerArray = arrayOf("Garden Node", "Controller")
+        // populate spinner with "Garden Node" and "Actuator"
+        val spinnerArray = arrayOf("Garden Node", "Actuator")
         val adapter = context?.let { ArrayAdapter(it, android.R.layout.simple_spinner_item, spinnerArray) }
         adapter?.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
@@ -80,7 +115,12 @@ class HomeFragment : Fragment() {
 //            for (device in devices) {
 //                Timber.d("Device: ${device.label} is ${device.state}, online: ${device.online}")
 //            }
-            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices)
+            if (spinner.selectedItem.toString() == "Garden Node") {
+                devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+            } else {
+                devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+            }
+//            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices)
         }
 
         /** Dynamic set UI elements **/
@@ -137,10 +177,31 @@ class HomeFragment : Fragment() {
                 }
             }
 
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Timber.d("spinner.onItemSelectedListener.onItemSelected")
+
+                if (matterDeviceViewModel.devices.value == null) {
+                    return
+                }
+
+                if (spinner.selectedItem.toString() == "Garden Node") {
+                    devicesListRecyclerView.adapter = HomeAdapter(requireContext(), matterDeviceViewModel.devices.value!!.filter { it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+                } else {
+                    devicesListRecyclerView.adapter = HomeAdapter(requireContext(), matterDeviceViewModel.devices.value!!.filter { it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                Timber.d("spinner.onItemSelectedListener.onNothingSelected")
+            }
+        }
+
         // Setup Interactions Within Devices View
         addNewDeviceButton.setOnClickListener {
             Timber.d("addDeviceButton.setOnClickListener")
-            viewModel.stopDevicesPeriodicPing()
+            deviceAttestationFailureIgnored = false
+            viewModel.stopMonitoringStateChanges()
             viewModel.commissionDevice(requireContext())
         }
 
@@ -154,7 +215,7 @@ class HomeFragment : Fragment() {
 
     private fun showNewDeviceAlertDialog(activityResult: ActivityResult?) {
         try {
-            MaterialAlertDialogBuilder(requireContext())
+            val dialog = MaterialAlertDialogBuilder(requireContext())
                 .setView(newDeviceAlertDialogBinding.root)
                 .setTitle("New device information")
                 .setPositiveButton(resources.getString(R.string.ok)) { _, _ ->
@@ -165,7 +226,17 @@ class HomeFragment : Fragment() {
                 }
                 .setCancelable(false)
                 .create()
-                .show()
+
+            if (deviceAttestationFailureIgnored) {
+                dialog.setMessage(
+                    Html.fromHtml(getString(R.string.device_attestation_warning),
+                        Html.FROM_HTML_MODE_LEGACY
+                    ))
+            }
+            dialog.show()
+            // Make the hyperlink clickable. Must be set after show().
+            val msgTextView: TextView? = dialog.findViewById(android.R.id.message)
+            msgTextView?.movementMethod = LinkMovementMethod.getInstance()
         } catch (e: Exception) {
             Timber.e(e)
         }
@@ -180,15 +251,14 @@ class HomeFragment : Fragment() {
             if (viewModel.commissionDeviceStatus.value == TaskStatus.NotStarted) {
                 Timber.d("TaskStatus.NotStarted so starting commissioning")
                 viewModel.multiadminCommissioning(intent, requireContext())
-//                viewModel.commissionDevice(requireContext())
             } else {
                 Timber.d("TaskStatus is *not* NotStarted: $viewModel.commissionDeviceStatus.value")
             }
         } else {
             Timber.d("Invocation: Main")
             Timber.d(
-                "Starting periodic ping on device with interval [$PERIODIC_UPDATE_INTERVAL_DEVICE_SCREEN_SECONDS] seconds")
-            viewModel.startDevicesPeriodicPing()
+                "Starting periodic ping on device with interval [$PERIODIC_READ_INTERVAL_DEVICE_SCREEN_SECONDS] seconds")
+            viewModel.startMonitoringStateChanges()
         }
     }
 
@@ -196,7 +266,63 @@ class HomeFragment : Fragment() {
         super.onPause()
 
         Timber.d("onPause(): Stopping periodic ping on devices")
-        viewModel.stopDevicesPeriodicPing()
+        viewModel.stopMonitoringStateChanges()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        chipClient.chipDeviceController.setDeviceAttestationDelegate(0, EmptyAttestationDelegate())
+    }
+
+    // ---------------------------------------------------------------------------
+    // Device Attestation Delegate
+
+    private class EmptyAttestationDelegate : DeviceAttestationDelegate {
+        override fun onDeviceAttestationCompleted(
+            devicePtr: Long,
+            attestationInfo: AttestationInfo,
+            errorCode: Int
+        ) {}
+    }
+
+    private fun setDeviceAttestationDelegate() {
+        chipClient.chipDeviceController.setDeviceAttestationDelegate(
+            DEVICE_ATTESTATION_FAILED_TIMEOUT_SECONDS) { devicePtr, attestationInfo, errorCode ->
+            Timber.d(
+                "Device attestation errorCode: $errorCode, " +
+                        "Look at 'src/credentials/attestation_verifier/DeviceAttestationVerifier.h' " +
+                        "AttestationVerificationResult enum to understand the errors")
+
+            if (errorCode == STATUS_PAIRING_SUCCESS) {
+                Timber.d("DeviceAttestationDelegate: Success on device attestation.")
+                lifecycleScope.launch {
+                    chipClient.chipDeviceController.continueCommissioning(devicePtr, true)
+                }
+            } else {
+                Timber.d("DeviceAttestationDelegate: Error on device attestation [$errorCode].")
+                // Ideally, we'd want to show a Dialog and ask the user whether the attestation
+                // failure should be ignored or not.
+                // Unfortunately, the GPS commissioning API is in control at this point, and the
+                // Dialog will only show up after GPS gives us back control.
+                // So, we simply ignore the attestation failure for now.
+                // TODO: Add a new setting to control that behavior.
+                deviceAttestationFailureIgnored = true
+                Timber.w("Ignoring attestation failure.")
+                lifecycleScope.launch {
+                    chipClient.chipDeviceController.continueCommissioning(devicePtr, true)
+                }
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Companion object
+
+    companion object {
+        private const val STATUS_PAIRING_SUCCESS = 0
+
+        /** Set for the fail-safe timer before onDeviceAttestationFailed is invoked. */
+        private const val DEVICE_ATTESTATION_FAILED_TIMEOUT_SECONDS = 60
     }
 
     @Deprecated("Deprecated in Java")

@@ -1,21 +1,14 @@
-package com.iotgroup2.matterapp.Pages.Home.Device
+package com.iotgroup2.matterapp.Pages.Home.Actuator
 
 import android.app.Activity
 import android.content.IntentSender
 import android.os.SystemClock
-import android.view.InputDevice.getDevice
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningWindow
 import com.google.android.gms.home.matter.commissioning.ShareDeviceRequest
-import com.google.android.gms.home.matter.commissioning.SharedDeviceData
 import com.google.android.gms.home.matter.common.DeviceDescriptor
 import com.google.android.gms.home.matter.common.Discriminator
-import com.iotgroup2.matterapp.Device
-import com.iotgroup2.matterapp.Pages.Home.Device.EditDevice.EditDeviceViewModel
-import com.iotgroup2.matterapp.Pages.Home.HomeViewModel
-import com.iotgroup2.matterapp.shared.MatterViewModel.DeviceUiModel
 import com.iotgroup2.matterapp.shared.matter.*
 import com.iotgroup2.matterapp.shared.matter.chip.ChipClient
 import com.iotgroup2.matterapp.shared.matter.chip.ClustersHelper
@@ -26,16 +19,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import okhttp3.MediaType
-import okhttp3.RequestBody
-import org.json.JSONObject
-import shared.Utility.HTTP
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
-class DeviceViewModel
+class ActuatorViewModel
 @Inject
 constructor(
     private val devicesRepository: DevicesRepository,

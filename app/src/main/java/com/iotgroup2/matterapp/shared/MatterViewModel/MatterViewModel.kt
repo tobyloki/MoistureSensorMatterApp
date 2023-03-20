@@ -7,6 +7,7 @@ import android.content.IntentSender
 import android.os.SystemClock
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.*
+import chip.devicecontroller.model.NodeState
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
@@ -19,7 +20,15 @@ import com.google.android.gms.home.matter.commissioning.DeviceInfo
 import com.google.android.gms.home.matter.commissioning.SharedDeviceData
 import com.iotgroup2.matterapp.*
 import com.iotgroup2.matterapp.shared.matter.*
+import com.iotgroup2.matterapp.shared.matter.chip.ChipClient
 import com.iotgroup2.matterapp.shared.matter.chip.ClustersHelper
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.HumidityMaxMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.HumidityMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.HumidityMinMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.OnOffAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.PressureMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.TemperatureMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.SubscriptionHelper
 import com.iotgroup2.matterapp.shared.matter.commissioning.AppCommissioningService
 import com.iotgroup2.matterapp.shared.matter.data.DevicesRepository
 import com.iotgroup2.matterapp.shared.matter.data.DevicesStateRepository
@@ -69,6 +78,8 @@ constructor(
     private val devicesStateRepository: DevicesStateRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val clustersHelper: ClustersHelper,
+    private val chipClient: ChipClient,
+    private val subscriptionHelper: SubscriptionHelper,
 ): ViewModel() {
     // Controls whether a periodic ping to the devices is enabled or not.
     private var devicesPeriodicPingEnabled: Boolean = true
@@ -112,7 +123,7 @@ constructor(
                 devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false, temperature = 0, pressure = 0, humidity = 0, thingName = 0, battery = 0))
             } else {
                 Timber.d("    deviceId setting its own value for state")
-                devicesUiModel.add(DeviceUiModel(device, state.online, state.on, state.temperature, state.pressure, state.humidity, state.thingName, state.battery))
+                devicesUiModel.add(DeviceUiModel(device, /*state.online*/ true, state.on, state.temperature, state.pressure, state.humidity, state.thingName, state.battery))
             }
         }
         return devicesUiModel
@@ -169,18 +180,29 @@ constructor(
             }
 
             // Introspect the device and update its deviceType.
-            val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId, 0)
+            // TODO: Need to get capabilities information and store that in the devices repository.
+            // (e.g on/off on which endpoint).
+            val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
             Timber.d("*** MATTER DEVICE INFO ***")
-            deviceMatterInfoList.forEachIndexed { index, deviceMatterInfo ->
-                Timber.d("Processing [[${index}] ${deviceMatterInfo}]")
-                // TODO: double check this actually works for real
-                if (index == 2) {   // first is temperature, second is pressure, third is humidity
+            var gotDeviceType = false
+            deviceMatterInfoList.forEach { deviceMatterInfo ->
+                Timber.d("Processing endpoint [$deviceMatterInfo.endpoint]")
+                // Endpoint 0 is the Root Node, so we disregard it.
+                if (deviceMatterInfo.endpoint != 0) {
+                    if (gotDeviceType) {
+                        // TODO: Handle this properly once we have specific examples to learn from.
+                        Timber.w(
+                            "The device has more than one endpoint. We're simply using the first one to define the device type.")
+                        return@forEach
+                    }
                     if (deviceMatterInfo.types.size > 1) {
-                        // TODO: Handle this properly
-                        Timber.w("The device has more than one type. We're simply using the first one.")
+                        // TODO: Handle this properly once we have specific examples to learn from.
+                        Timber.w(
+                            "The endpoint has more than one type. We're simply using the first one to define the device type.")
                     }
                     devicesRepository.updateDeviceType(
                         deviceId, convertToAppDeviceType(deviceMatterInfo.types.first()))
+                    gotDeviceType = true
                 }
             }
         }
@@ -311,11 +333,11 @@ constructor(
 
     // Task that runs periodically to update the devices state.
     fun startDevicesPeriodicPing() {
-        if (PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS == -1) {
+        if (PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS == -1) {
             return
         }
         Timber.d(
-            "${LocalDateTime.now()} startDevicesPeriodicPing every $PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS seconds")
+            "${LocalDateTime.now()} startDevicesPeriodicPing every $PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS seconds")
         devicesPeriodicPingEnabled = true
         runDevicesPeriodicPing()
     }
@@ -326,9 +348,6 @@ constructor(
                 // For each ne of the real devices
                 val devicesList = devicesRepository.getAllDevices().devicesList
                 devicesList.forEach { device ->
-                    if (device.name.startsWith(DUMMY_DEVICE_NAME_PREFIX)) {
-                        return@forEach
-                    }
                     Timber.i("runDevicesPeriodicPing deviceId [${device.deviceId}]")
 
                     try {
@@ -381,12 +400,14 @@ constructor(
                         }
 
                         val isOnline: Boolean
-                        if (thingName == null) {
-                            Timber.e("runDevicesPeriodicUpdate: cannot get device thingName -> OFFLINE")
-                            isOnline = false
-                        } else {
-                            isOnline = true
-                        }
+//                        if (thingName == null && isOn == null) {
+//                            Timber.e("runDevicesPeriodicUpdate: cannot get device thingName or isOn -> OFFLINE")
+//                            isOnline = false
+//                        } else {
+//                            isOnline = true
+//                        }
+                        isOnline = true
+
                         Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [pressure: ${pressure}], [humidity: ${humidity}], [thingName: ${thingName}], [battery: ${battery}]")
                         // TODO: only need to do it if state has changed
                         devicesStateRepository.updateDeviceState(
@@ -396,7 +417,7 @@ constructor(
                         Timber.e(e)
                     }
                 }
-                delay(PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS * 1000L)
+                delay(PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS * 1000L)
             }
         }
     }
@@ -406,34 +427,28 @@ constructor(
     }
 
     // MARK: - State control
-    fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean, temperature: Int?, pressure: Int?, humidity: Int?, thingName: Int?, battery: Int?) {
+    fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean) {
         Timber.d("updateDeviceStateOn: Device [${deviceUiModel}]  isOn [${isOn}]")
         viewModelScope.launch {
-            if (isDummyDevice(deviceUiModel.device.name)) {
-                Timber.d("Handling test device")
-                devicesStateRepository.updateDeviceState(
-                    deviceUiModel.device.deviceId,
-                    true,
-                    isOn,
-                    temperature,
-                    pressure,
-                    humidity,
-                    thingName,
-                    battery
-                )
-            } else {
+            try {
                 Timber.d("Handling real device")
-                clustersHelper.setOnOffDeviceStateOnOffCluster(deviceUiModel.device.deviceId, isOn, 1)
+                clustersHelper.setOnOffDeviceStateOnOffCluster(
+                    deviceUiModel.device.deviceId,
+                    isOn,
+                    1
+                )
                 devicesStateRepository.updateDeviceState(
                     deviceUiModel.device.deviceId,
-                    true,
+                    null,
                     isOn,
-                    temperature,
-                    pressure,
-                    humidity,
-                    thingName,
-                    battery
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
                 )
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }
@@ -456,6 +471,221 @@ constructor(
                 devicesRepository.removeDevice(deviceId)
             } catch (e: Exception) {
                 Timber.e(e)
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------
+    // State Changes Monitoring
+
+    /**
+     * The way we monitor state changes is defined by constant [StateChangesMonitoringMode].
+     * [StateChangesMonitoringMode.Subscription] is the preferred mode.
+     * [StateChangesMonitoringMode.PeriodicRead] was used initially because of issues with
+     * subscriptions. We left its associated code as it could be useful to some developers.
+     */
+    fun startMonitoringStateChanges() {
+        when (STATE_CHANGES_MONITORING_MODE) {
+            StateChangesMonitoringMode.Subscription -> subscribeToDevicesPeriodicUpdates()
+            StateChangesMonitoringMode.PeriodicRead -> startDevicesPeriodicPing()
+        }
+    }
+
+    fun stopMonitoringStateChanges() {
+        when (STATE_CHANGES_MONITORING_MODE) {
+            StateChangesMonitoringMode.Subscription -> unsubscribeToDevicesPeriodicUpdates()
+            StateChangesMonitoringMode.PeriodicRead -> stopDevicesPeriodicPing()
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------
+    // Subscription to periodic device updates.
+    // See:
+    //   - Spec section "8.5 Subscribe Interaction"
+    //   - Matter primer:
+    //
+    // https://developers.home.google.com/matter/primer/interaction-model-reading#subscription_transaction
+
+    private fun subscribeToDevicesPeriodicUpdates() {
+        Timber.d("subscribeToDevicesPeriodicUpdates()")
+        viewModelScope.launch {
+            // For each one of the real devices
+            val devicesList = devicesRepository.getAllDevices().devicesList
+            devicesList.forEach { device ->
+                val reportCallback =
+                    object : SubscriptionHelper.ReportCallbackForDevice(device.deviceId) {
+                        override fun onReport(nodeState: NodeState) {
+                            super.onReport(nodeState)
+                            // TODO: See HomeViewModel:CommissionDeviceSucceeded for device capabilities
+//                            val onOffState =
+//                                subscriptionHelper.extractAttribute(nodeState, 1, OnOffAttribute) as Boolean?
+//                            Timber.d("onOffState [${onOffState}]")
+//                            if (onOffState == null) {
+//                                Timber.e("onReport(): WARNING -> onOffState is NULL. Ignoring.")
+//                                return
+//                            }
+//                            viewModelScope.launch {
+//                                devicesStateRepository.updateDeviceState(
+//                                    device.deviceId, isOnline = true, isOn = onOffState)
+//                            }
+
+                            viewModelScope.launch {
+                                try {
+                                    var isOn: Boolean? = null
+                                    try {
+//                                    isOn = clustersHelper.getDeviceStateOnOffCluster(device.deviceId, 1)
+                                        isOn = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            1,
+                                            OnOffAttribute
+                                        ) as Boolean?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [isOn: ${isOn}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var temperature: Int? = null
+                                    try {
+//                                        temperature =
+//                                            clustersHelper.getDeviceStateTemperatureMeasurementCluster(
+//                                                device.deviceId,
+//                                                1
+//                                            )
+                                        temperature = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            1,
+                                            TemperatureMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [temperature: ${temperature}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var pressure: Int? = null
+                                    try {
+//                                        pressure =
+//                                            clustersHelper.getDeviceStatePressureMeasurementCluster(
+//                                                device.deviceId,
+//                                                2
+//                                            )
+                                        pressure = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            2,
+                                            PressureMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var humidity: Int? = null
+                                    try {
+//                                        humidity =
+//                                            clustersHelper.getDeviceStateHumidityMeasurementCluster(
+//                                                device.deviceId,
+//                                                3
+//                                            )
+                                        humidity = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            3,
+                                            HumidityMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var thingName: Int? = null
+                                    try {
+//                                        thingName =
+//                                            clustersHelper.getDeviceStateHumidityMinMeasurementCluster(
+//                                                device.deviceId,
+//                                                3
+//                                            )
+                                        thingName = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            3,
+                                            HumidityMinMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [thingName: ${thingName}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var battery: Int? = null
+                                    try {
+//                                        battery =
+//                                            clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(
+//                                                device.deviceId,
+//                                                3
+//                                            )
+                                        battery = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            3,
+                                            HumidityMaxMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [battery: ${battery}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    val isOnline: Boolean
+//                                    if (thingName == null && isOn == null) {
+//                                        Timber.e("subscribeToDevicesPeriodicUpdates: cannot get device thingName or isOn -> OFFLINE")
+//                                        isOnline = false
+//                                    } else {
+//                                        isOnline = true
+//                                    }
+                                    isOnline = true
+
+                                    Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [pressure: ${pressure}], [humidity: ${humidity}], [thingName: ${thingName}], [battery: ${battery}]")
+                                    // TODO: only need to do it if state has changed
+                                    devicesStateRepository.updateDeviceState(
+                                        device.deviceId,
+                                        isOnline = isOnline,
+                                        isOn = isOn,
+                                        temperature = temperature,
+                                        pressure = pressure,
+                                        humidity = humidity,
+                                        thingName = thingName,
+                                        battery = battery
+                                    )
+                                } catch (e: Exception) {
+                                    Timber.e(e)
+                                }
+                            }
+                        }
+                    }
+
+                try {
+                    val connectedDevicePointer = chipClient.getConnectedDevicePointer(device.deviceId)
+                    subscriptionHelper.awaitSubscribeToPeriodicUpdates(
+                        connectedDevicePointer,
+                        SubscriptionHelper.SubscriptionEstablishedCallbackForDevice(device.deviceId),
+                        SubscriptionHelper.ResubscriptionAttemptCallbackForDevice(device.deviceId),
+                        reportCallback)
+                } catch (e: IllegalStateException) {
+                    Timber.e("Can't get connectedDevicePointer for ${device.deviceId}.")
+                    return@forEach
+                }
+            }
+        }
+    }
+
+    private fun unsubscribeToDevicesPeriodicUpdates() {
+        Timber.d("unsubscribeToPeriodicUpdates()")
+        viewModelScope.launch {
+            // For each one of the real devices
+            val devicesList = devicesRepository.getAllDevices().devicesList
+            devicesList.forEach { device ->
+                try {
+                    val connectedDevicePtr =
+                        chipClient.getConnectedDevicePointer(device.deviceId)
+                    subscriptionHelper.awaitUnsubscribeToPeriodicUpdates(connectedDevicePtr)
+                } catch (e: IllegalStateException) {
+                    Timber.e("Can't get connectedDevicePointer for ${device.deviceId}.")
+                    return@forEach
+                }
             }
         }
     }

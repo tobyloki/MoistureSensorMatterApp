@@ -1,26 +1,23 @@
-package com.iotgroup2.matterapp.Pages.Home.Device
+package com.iotgroup2.matterapp.Pages.Home.Sensor
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.home.matter.commissioning.SharedDeviceData
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.iotgroup2.matterapp.Device.DeviceType
-import com.iotgroup2.matterapp.MainActivity
-import com.iotgroup2.matterapp.Pages.Home.Device.EditDevice.EditDeviceActivity
+import com.iotgroup2.matterapp.Pages.Home.Actuator.ActuatorViewModel
+import com.iotgroup2.matterapp.Pages.Home.EditDevice.EditDeviceActivity
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.databinding.ActivityDeviceBinding
@@ -30,8 +27,6 @@ import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
 import com.iotgroup2.matterapp.shared.Utility.Utility
 import com.iotgroup2.matterapp.shared.matter.*
 import dagger.hilt.android.AndroidEntryPoint
-import org.json.JSONObject
-import shared.Models.DeviceModel
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -40,6 +35,7 @@ class DeviceActivity : AppCompatActivity() {
 
     private lateinit var deviceId: String
     private var deviceType: Int = DeviceType.TYPE_UNSPECIFIED_VALUE
+    private lateinit var deviceName: String
 
     private lateinit var nameTxt: TextView
     private lateinit var onlineIcon: TextView
@@ -54,7 +50,7 @@ class DeviceActivity : AppCompatActivity() {
     private val viewModel: MatterActivityViewModel by viewModels()
     private var deviceUiModel: DeviceUiModel? = null
 
-    private lateinit var deviceViewModel: DeviceViewModel
+    private lateinit var actuatorViewModel: ActuatorViewModel
 
     // The ActivityResultLauncher that launches the "shareDevice" activity in Google Play Services.
     private lateinit var shareDeviceLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -89,7 +85,14 @@ class DeviceActivity : AppCompatActivity() {
         Timber.i("Device ID: $deviceId")
         Timber.i("Device Type: $deviceType")
 
-        deviceViewModel = ViewModelProvider(this).get(DeviceViewModel::class.java)
+        deviceName = extras.getString("deviceName").toString()
+        val deviceOnline = extras.getBoolean("deviceOnline")
+
+        nameTxt.text = deviceName
+        onlineIcon.setTextColor(if (deviceOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
+        onlineTxt.text = if (deviceOnline) "Online" else "Offline"
+
+        actuatorViewModel = ViewModelProvider(this).get(ActuatorViewModel::class.java)
 
         // matter device list
         viewModel.devicesUiModelLiveData.observe(this) { devicesUiModel: DevicesUiModel ->
@@ -117,21 +120,21 @@ class DeviceActivity : AppCompatActivity() {
                 val resultCode = result.resultCode
                 if (resultCode == RESULT_OK) {
                     Timber.d("ShareDevice: Success")
-                    deviceViewModel.shareDeviceSucceeded()
+                    actuatorViewModel.shareDeviceSucceeded()
                 } else {
-                    deviceViewModel.shareDeviceFailed(resultCode)
+                    actuatorViewModel.shareDeviceFailed(resultCode)
                 }
             }
         // CODELAB SECTION END
 
         // CODELAB FEATURED BEGIN
         // The current status of the share device action.
-        deviceViewModel.shareDeviceStatus.observe(this) { status ->
+        actuatorViewModel.shareDeviceStatus.observe(this) { status ->
 //            val isButtonEnabled = status !is TaskStatus.InProgress
 //            updateShareDeviceButton(isButtonEnabled)
             if (status is TaskStatus.Failed) {
                 Timber.e("ShareDevice failed: ${status.message}, ${status.cause}")
-                viewModel.startDevicesPeriodicPing()
+                viewModel.startMonitoringStateChanges()
             }
         }
         // CODELAB FEATURED END
@@ -143,7 +146,7 @@ class DeviceActivity : AppCompatActivity() {
         // Note that when the IntentSender has been processed, it must be consumed to avoid a
         // configuration change that resends the observed values and re-triggers the device sharing.
         // CODELAB FEATURED BEGIN
-        deviceViewModel.shareDeviceIntentSender.observe(this) { sender ->
+        actuatorViewModel.shareDeviceIntentSender.observe(this) { sender ->
             Timber.d("shareDeviceIntentSender.observe is called with [${intentSenderToString(sender)}]")
             if (sender != null) {
                 // Share Device Step 4: Launch the activity described in the IntentSender that
@@ -151,7 +154,7 @@ class DeviceActivity : AppCompatActivity() {
                 // the device).
                 Timber.d("ShareDevice: Launch GPS activity to share device")
                 shareDeviceLauncher.launch(IntentSenderRequest.Builder(sender).build())
-                deviceViewModel.consumeShareDeviceIntentSender()
+                actuatorViewModel.consumeShareDeviceIntentSender()
 
                 // show alert
 //                val builder = MaterialAlertDialogBuilder(this).apply {
@@ -169,7 +172,7 @@ class DeviceActivity : AppCompatActivity() {
         // CODELAB FEATURED END
 
         // Background work alert dialog actions.
-        deviceViewModel.backgroundWorkAlertDialogAction.observe(this) { action ->
+        actuatorViewModel.backgroundWorkAlertDialogAction.observe(this) { action ->
             if (action is BackgroundWorkAlertDialogAction.Show) {
                 showBackgroundWorkAlertDialog(action.title, action.message)
             } else if (action is BackgroundWorkAlertDialogAction.Hide) {
@@ -195,9 +198,9 @@ class DeviceActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (PERIODIC_UPDATE_INTERVAL_HOME_SCREEN_SECONDS != -1) {
+        if (PERIODIC_READ_INTERVAL_HOME_SCREEN_SECONDS != -1) {
             Timber.i("Starting periodic ping on devices")
-            viewModel.startDevicesPeriodicPing()
+            viewModel.startMonitoringStateChanges()
         }
 
         val unit = Utility.getUnit(this)
@@ -207,12 +210,14 @@ class DeviceActivity : AppCompatActivity() {
         } else {
             tempUnitTxt.text = "°F"
         }
+
+        updateUI()
     }
 
     override fun onPause() {
         super.onPause()
         Timber.i("onPause(): Stopping periodic ping on devices")
-        viewModel.stopDevicesPeriodicPing()
+        viewModel.stopMonitoringStateChanges()
     }
 
     private fun updateUI() {
@@ -256,7 +261,8 @@ class DeviceActivity : AppCompatActivity() {
                 val intent = Intent(this, EditDeviceActivity::class.java)
                 intent.putExtra("deviceId", deviceId)
                 intent.putExtra("deviceType", deviceType)
-                startActivity(intent)
+                intent.putExtra("deviceName", deviceName)
+                startActivityForResult(intent, 0)
                 true
             }
             R.id.changeUnits -> {
@@ -265,11 +271,42 @@ class DeviceActivity : AppCompatActivity() {
                 true
             }
             R.id.shareDevice -> {
-                viewModel.stopDevicesPeriodicPing()
-                deviceViewModel.shareDevice(this, deviceId.toLong())
+                viewModel.stopMonitoringStateChanges()
+                try {
+                    actuatorViewModel.shareDevice(this, deviceId.toLong())
+                } catch (e: Exception) {
+                    Timber.e("Error: ${e.message}")
+
+                    // show alert
+                    val builder = MaterialAlertDialogBuilder(this).apply {
+                        setTitle("Unable to share device")
+                        setMessage("Please check your device is connected properly to the app.")
+                        setPositiveButton("Close") { dialog, which ->
+                        }
+                        setCancelable(true)
+                    }
+                    builder.show()
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 0) {
+            if (resultCode == Activity.RESULT_OK) {
+                val name = data?.getStringExtra("deviceName")
+                if (name == null) {
+                    Timber.e("Device name is null")
+                    return
+                }
+                deviceName = name
+                nameTxt.text = deviceName
+            }
         }
     }
 }

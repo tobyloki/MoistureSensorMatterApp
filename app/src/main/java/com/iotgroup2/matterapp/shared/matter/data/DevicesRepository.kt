@@ -39,15 +39,15 @@ class DevicesRepository @Inject constructor(@ApplicationContext context: Context
 
   // The Flow to read data from the DataStore.
   val devicesFlow: Flow<Devices> =
-      devicesDataStore.data.catch { exception ->
-        // dataStore.data throws an IOException when an error is encountered when reading data
-        if (exception is IOException) {
-          Timber.e(exception, "Error reading devices.")
-          emit(Devices.getDefaultInstance())
-        } else {
-          throw exception
-        }
+    devicesDataStore.data.catch { exception ->
+      // dataStore.data throws an IOException when an error is encountered when reading data
+      if (exception is IOException) {
+        Timber.e(exception, "Error reading devices.")
+        emit(Devices.getDefaultInstance())
+      } else {
+        throw exception
       }
+    }
 
   suspend fun incrementAndReturnLastDeviceId(): Long {
     val newLastDeviceId = devicesFlow.first().lastDeviceId + 1
@@ -74,7 +74,7 @@ class DevicesRepository @Inject constructor(@ApplicationContext context: Context
     val (index, device) = getIndexAndDevice(deviceId)
     if (index == null) {
       Timber.e(
-          "Unable to get device information to update its type: deviceId [${deviceId}] deviceType [${deviceType}]")
+        "Unable to get device information to update its type: deviceId [${deviceId}] deviceType [${deviceType}]")
       return
     }
     val deviceBuilder = Device.newBuilder(device)
@@ -85,11 +85,11 @@ class DevicesRepository @Inject constructor(@ApplicationContext context: Context
   }
 
   suspend fun updateDeviceName(deviceId: Long, deviceName: String) {
-    Timber.d("updateDeviceName: deviceId [${deviceId}] deviceName [${deviceName}]")
+    Timber.d("updateDeviceType: deviceId [${deviceId}] deviceName [${deviceName}]")
     val (index, device) = getIndexAndDevice(deviceId)
     if (index == null) {
       Timber.e(
-          "Unable to get device information to update its name: deviceId [${deviceId}] deviceName [${deviceName}]")
+        "Unable to get device information to update its type: deviceId [${deviceId}] deviceName [${deviceName}]")
       return
     }
     val deviceBuilder = Device.newBuilder(device)
@@ -125,6 +125,10 @@ class DevicesRepository @Inject constructor(@ApplicationContext context: Context
 
   suspend fun getAllDevices(): Devices {
     return devicesFlow.first()
+  }
+
+  suspend fun clearAllData() {
+    devicesDataStore.updateData { devicesList -> devicesList.toBuilder().clear().build() }
   }
 
   private suspend fun getIndex(deviceId: Long): Int {
