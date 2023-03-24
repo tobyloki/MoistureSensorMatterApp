@@ -8,6 +8,6 @@
     <item
         android:id="@+id/navigation_integrations"
         android:icon="@drawable/ic_baseline_device_hub_24"
-        android:title="@string/title_integrations" />
+        android:title="@string/title_automations" />
 
 </menu>

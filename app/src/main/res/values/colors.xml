@@ -15,4 +15,7 @@
 
     <color name="offline">#A5A5A5</color>
     <color name="online">#61FC53</color>
+    <color name="light_gray">#F2F2F2</color>
+    <color name="green">#75D86C</color>
+    <color name="gray">#9B9B9B</color>
 </resources>

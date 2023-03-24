@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -43,9 +44,14 @@ class DeviceActivity : AppCompatActivity() {
     private lateinit var tempValueTxt: TextView
     private lateinit var tempUnitTxt: TextView
     private lateinit var moistureValueTxt: TextView
+    private lateinit var moistureUnitTxt: TextView
     private lateinit var airPressureValueTxt: TextView
     private lateinit var airPressureUnitTxt: TextView
     private lateinit var batteryValueTxt: TextView
+
+    private lateinit var tempInfoBtn: ImageButton
+    private lateinit var moistureInfoBtn: ImageButton
+    private lateinit var airPressureInfoBtn: ImageButton
 
     private val viewModel: MatterActivityViewModel by viewModels()
     private var deviceUiModel: DeviceUiModel? = null
@@ -72,9 +78,14 @@ class DeviceActivity : AppCompatActivity() {
         tempValueTxt = _binding.tempValueTxt
         tempUnitTxt = _binding.tempUnitTxt
         moistureValueTxt = _binding.moistureValueTxt
-        airPressureValueTxt = _binding.airPressureValueTxt
-        airPressureUnitTxt = _binding.airPressureUnitTxt
+        moistureUnitTxt = _binding.moistureUnitTxt
+        airPressureValueTxt = _binding.pressureValueTxt
+        airPressureUnitTxt = _binding.pressureUnitTxt
         batteryValueTxt = _binding.batteryValueTxt
+
+        tempInfoBtn = _binding.tempInfoBtn
+        moistureInfoBtn = _binding.moistureInfoBtn
+        airPressureInfoBtn = _binding.pressureInfoBtn
 
         /* Initialize Data */
         val extras: Bundle? = intent.extras
@@ -104,6 +115,39 @@ class DeviceActivity : AppCompatActivity() {
 //                    }
                 }
             }
+        }
+
+        tempInfoBtn.setOnClickListener {
+            // show alert with info
+            AlertDialog.Builder(this)
+                .setTitle("Temperature")
+                .setMessage("This metric reports the temperature of the air.")
+                .setPositiveButton("Close") { dialog, which -> }
+                .setIcon(R.drawable.ic_baseline_info_24)
+                .setCancelable(true)
+                .show()
+        }
+
+        moistureInfoBtn.setOnClickListener {
+            // show alert with info
+            AlertDialog.Builder(this)
+                .setTitle("Moisture")
+                .setMessage("This metric reports the moisture level of the soil.")
+                .setPositiveButton("Close") { dialog, which -> }
+                .setIcon(R.drawable.ic_baseline_info_24)
+                .setCancelable(true)
+                .show()
+        }
+
+        airPressureInfoBtn.setOnClickListener {
+            // show alert with info
+            AlertDialog.Builder(this)
+                .setTitle("Air Pressure")
+                .setMessage("This metric reports the pressure of the air.")
+                .setPositiveButton("Close") { dialog, which -> }
+                .setIcon(R.drawable.ic_baseline_info_24)
+                .setCancelable(true)
+                .show()
         }
 
         // Share Device Step 1, where an activity launcher is registered.
@@ -205,7 +249,7 @@ class DeviceActivity : AppCompatActivity() {
 
         val unit = Utility.getUnit(this)
         Timber.i("Unit: $unit")
-        if (!unit) {
+        if (unit) {
             tempUnitTxt.text = "°C"
         } else {
             tempUnitTxt.text = "°F"

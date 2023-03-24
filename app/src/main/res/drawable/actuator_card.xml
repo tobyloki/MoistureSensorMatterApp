@@ -1,0 +1,17 @@
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#949494"> <!-- This is the ripple color -->
+
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <padding android:left="10dp" android:right="10dp" android:top="10dp" android:bottom="10dp"/>
+        </shape>
+    </item>
+    <item>
+        <layer-list>
+            <item android:drawable="@drawable/blue_ellipse"
+                android:gravity="right"
+                android:width="200dp"/>
+        </layer-list>
+    </item>
+
+</ripple>

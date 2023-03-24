@@ -7,20 +7,20 @@
     android:padding="20dp"
     tools:context=".Pages.Units.UnitsActivity">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Units"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Switch
+    <com.davidmiguel.multistateswitch.MultiStateSwitch
         android:id="@+id/unitSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        app:layout_constraintStart_toStartOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
-        tools:ignore="UseSwitchCompatOrMaterialXml" />
+        android:layout_width="300dp"
+        android:layout_height="45dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:multistateswitch_background_color="@color/light_gray"
+        app:multistateswitch_background_radius="8"
+        app:multistateswitch_disabled_text_size="14sp"
+        app:multistateswitch_max_number_states="2"
+        app:multistateswitch_selected_background_color="@color/colorPrimary"
+        app:multistateswitch_selected_state_index="0"
+        app:multistateswitch_selected_text_size="14sp"
+        app:multistateswitch_text_size="14sp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,7 +39,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <ImageButton
         android:id="@+id/addIntegrationBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,10 +48,21 @@
         android:clickable="true"
         android:contentDescription="@string/add_a_new_device"
         android:focusable="true"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="#2196F3"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/add_btn"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/spin_kit"
+        style="@style/SpinKitView.CubeGrid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:SpinKit_Color="@color/colorPrimary"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/white" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

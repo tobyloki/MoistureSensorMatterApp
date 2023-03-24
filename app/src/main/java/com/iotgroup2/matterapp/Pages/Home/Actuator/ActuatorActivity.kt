@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -13,8 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import com.davidmiguel.multistateswitch.MultiStateSwitch
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.iotgroup2.matterapp.Device.DeviceType
 import com.iotgroup2.matterapp.Pages.Home.EditDevice.EditDeviceActivity
@@ -26,6 +27,8 @@ import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
 import com.iotgroup2.matterapp.shared.matter.*
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.util.List
+
 
 @AndroidEntryPoint
 class ActuatorActivity : AppCompatActivity() {
@@ -38,8 +41,7 @@ class ActuatorActivity : AppCompatActivity() {
     private lateinit var nameTxt: TextView
     private lateinit var onlineIcon: TextView
     private lateinit var onlineTxt: TextView
-    private lateinit var stateTxt: TextView
-    private lateinit var stateSw: Switch
+    private lateinit var multiStateSwitch: MultiStateSwitch
 
     private val viewModel: MatterActivityViewModel by viewModels()
     private var deviceUiModel: DeviceUiModel? = null
@@ -63,8 +65,7 @@ class ActuatorActivity : AppCompatActivity() {
         nameTxt = _binding.nameTxt
         onlineIcon  = _binding.onlineIcon
         onlineTxt = _binding.onlineTxt
-        stateTxt = _binding.tempUnitTxt
-        stateSw = _binding.switch1
+        multiStateSwitch = _binding.multiStateSwitch
 
         /* Initialize Data */
         val extras: Bundle? = intent.extras
@@ -172,15 +173,14 @@ class ActuatorActivity : AppCompatActivity() {
             }
         }
 
-        stateSw.setOnCheckedChangeListener { _, isChecked ->
-            stateTxt.text = if (isChecked) "ON" else "OFF"
-
+        multiStateSwitch.addStatesFromStrings(List.of("On", "Off"))
+        multiStateSwitch.addStateListener { stateIndex, (text, selectedText, disabledText) ->
             if (deviceUiModel == null) {
-                return@setOnCheckedChangeListener
+                return@addStateListener
             }
             val deviceData = deviceUiModel!!
 
-            viewModel.updateDeviceStateOn(deviceData, isChecked)
+            viewModel.updateDeviceStateOn(deviceData, stateIndex == 0)
         }
     }
 
@@ -228,8 +228,7 @@ class ActuatorActivity : AppCompatActivity() {
         onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
         onlineTxt.text = if (deviceData.isOnline) "Online" else "Offline"
 
-        stateTxt.text = if (deviceData.isOn) "ON" else "OFF"
-        stateSw.isChecked = deviceData.isOn
+        multiStateSwitch.selectState(if (deviceData.isOn) 0 else 1)
 
         Timber.i("Thing name: ${deviceData.thingName}")
     }

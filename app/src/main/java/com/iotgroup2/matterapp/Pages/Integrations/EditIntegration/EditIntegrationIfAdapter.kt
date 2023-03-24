@@ -55,16 +55,16 @@ class EditIntegrationIfAdapter(var activity: Activity, var ifList : List<EditInt
 
         holder.deleteBtn.setOnClickListener {
             // ask for confirmation
-            AlertDialog.Builder(activity)
+            AlertDialog.Builder(activity, R.style.MyAlertDialogStyle)
                 .setTitle("Delete ${ifItem.label}")
                 .setMessage("Are you sure you want to delete this sensor?")
-                .setPositiveButton(android.R.string.yes) { dialog, which ->
+                .setPositiveButton(activity.getString(R.string.confirm)) { dialog, which ->
                     deleteItem(ifItem.id, ifItem._version)
                 }
                 .setNegativeButton(android.R.string.no) { dialog, which ->
                     // do nothing
                 }
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.drawable.baseline_warning_24)
                 .show()
         }
 

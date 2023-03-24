@@ -76,6 +76,10 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
         value = false
     }
 
+    var loadedList: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
+        value = false
+    }
+
     /** Lifecycle Handlers **/
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
@@ -125,6 +129,8 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
 
                 getIfList(sensors)
                 getThenList(actuators)
+
+                loadedList.value = true
             } catch (e: Exception) {
                 Timber.e(e)
             }

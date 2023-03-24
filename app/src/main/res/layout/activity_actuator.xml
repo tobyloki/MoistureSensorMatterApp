@@ -19,14 +19,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="@+id/nameTxt"
-        app:layout_constraintTop_toBottomOf="@+id/nameTxt">
+        app:layout_constraintTop_toBottomOf="@+id/nameTxt"
+        android:background="@drawable/online_status_border"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingStart="15dp"
+        android:paddingEnd="17dp">
 
         <TextView
             android:id="@+id/onlineIcon"
@@ -35,7 +40,11 @@
             android:text="●"
             android:textAllCaps="false"
             android:textColor="@color/online"
-            android:textStyle="bold" />
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/onlineTxt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/onlineTxt"
@@ -43,8 +52,10 @@
             android:layout_height="wrap_content"
             android:paddingLeft="5dp"
             android:text="Online"
-            android:textAllCaps="false" />
-    </LinearLayout>
+            android:textAllCaps="false"
+            app:layout_constraintStart_toEndOf="@+id/onlineIcon"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
@@ -56,70 +67,39 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/tempCardView"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:elevation="10dp"
-            app:cardCornerRadius="10dp"
+            android:layout_marginTop="10dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="20dp">
+            <include
+                android:id="@+id/actuatorListItem" layout="@layout/edit_integration_actuator_list_item" />
 
-                <ImageView
-                    android:id="@+id/temperatureImg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/sprinkler" />
+            <com.davidmiguel.multistateswitch.MultiStateSwitch
+                android:id="@+id/multiStateSwitch"
+                android:layout_width="150dp"
+                android:layout_height="45dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintBottom_toBottomOf="@+id/actuatorListItem"
+                app:layout_constraintEnd_toEndOf="@+id/actuatorListItem"
+                app:multistateswitch_background_color="@color/light_gray"
+                app:multistateswitch_background_radius="8"
+                app:multistateswitch_disabled_text_size="14sp"
+                app:multistateswitch_max_number_states="2"
+                app:multistateswitch_selected_background_color="@color/green"
+                app:multistateswitch_selected_state_index="0"
+                app:multistateswitch_selected_text_size="14sp"
+                app:multistateswitch_text_size="14sp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    android:id="@+id/temperatureTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:text="Zone 1"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/temperatureImg"
-                    app:layout_constraintTop_toTopOf="@+id/temperatureImg" />
-
-                <ImageButton
-                    android:id="@+id/tempInfoBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    app:layout_constraintBottom_toBottomOf="@+id/temperatureTxt"
-                    app:layout_constraintStart_toEndOf="@+id/temperatureTxt"
-                    app:layout_constraintTop_toTopOf="@+id/temperatureTxt"
-                    app:srcCompat="@drawable/ic_baseline_info_24" />
-
-                <TextView
-                    android:id="@+id/tempUnitTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OFF"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <Switch
-                    android:id="@+id/switch1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="15dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/tempUnitTxt"
-                    app:layout_constraintEnd_toStartOf="@+id/tempUnitTxt"
-                    app:layout_constraintTop_toTopOf="@+id/tempUnitTxt" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

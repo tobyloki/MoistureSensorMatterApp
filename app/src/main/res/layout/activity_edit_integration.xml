@@ -24,18 +24,24 @@
             app:layout_constraintGuide_percent="0.5"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <android.widget.Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/doneBtn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:enabled="true"
             android:text="Done"
+            android:textColor="@color/black"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:icon="@drawable/baseline_check_circle_outline_24"
+            app:iconTint="@color/green"
+            android:gravity="center"
+            app:iconGravity="textStart"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -83,7 +89,7 @@
                 android:layout_marginTop="20dp"
                 android:text="If these sensors are in abnormal state (e.g. too wet, too cold, etc.) [automatically determined by integration]"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/nameFieldLayout" />
@@ -101,7 +107,7 @@
                 tools:listitem="@layout/edit_integration_if_list_item">
             </androidx.recyclerview.widget.RecyclerView>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
+            <ImageButton
                 android:id="@+id/ifAddBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -109,12 +115,11 @@
                 android:clickable="true"
                 android:contentDescription="@string/add_a_new_device"
                 android:focusable="true"
-                android:src="@android:drawable/ic_input_add"
-                app:backgroundTint="#2196F3"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/add_btn"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/recyclerView2"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toBottomOf="@+id/recyclerView2" />
 
             <TextView
                 android:id="@+id/thenTxt"
@@ -123,7 +128,7 @@
                 android:layout_marginTop="20dp"
                 android:text="Then turn off these actuators. They will automatically turn on after the sensors are back to normal state and the configured timers have expired."
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ifAddBtn" />
@@ -141,7 +146,7 @@
                 tools:listitem="@layout/edit_integration_then_list_item">
             </androidx.recyclerview.widget.RecyclerView>
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
+            <ImageButton
                 android:id="@+id/thenAddBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -149,14 +154,25 @@
                 android:clickable="true"
                 android:contentDescription="@string/add_a_new_device"
                 android:focusable="true"
-                android:src="@android:drawable/ic_input_add"
-                app:backgroundTint="#2196F3"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/add_btn"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/thenRecyclerView"
-                app:tint="@color/white"/>
+                app:layout_constraintTop_toBottomOf="@+id/thenRecyclerView"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/spin_kit"
+        style="@style/SpinKitView.CubeGrid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:SpinKit_Color="@color/colorPrimary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

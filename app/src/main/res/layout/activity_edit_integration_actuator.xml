@@ -18,52 +18,18 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout"
+            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:clipChildren="false"
-            android:clipToPadding="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ifTxt"
-            tools:layout_editor_absoluteX="20dp">
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/tempCardView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:elevation="10dp"
-                app:cardCornerRadius="10dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:padding="20dp">
-
-                    <ImageView
-                        android:id="@+id/temperatureImg"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/sprinkler" />
-
-                    <TextView
-                        android:id="@+id/temperatureTxt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:text="Turn Zone 1 off"
-                        app:layout_constraintBottom_toBottomOf="@+id/temperatureImg"
-                        app:layout_constraintStart_toEndOf="@+id/temperatureImg"
-                        app:layout_constraintTop_toTopOf="@+id/temperatureImg" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
+            <include layout="@layout/edit_integration_actuator_list_item"
+                />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
@@ -71,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Then"
+            android:text="Then turn off"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -98,6 +64,7 @@
             android:ems="10"
             android:gravity="center"
             android:inputType="number"
+            android:maxLength="2"
             android:text="35"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ifTxt2"
@@ -151,31 +118,41 @@
             app:layout_constraintGuide_percent="0.5"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <android.widget.Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/saveBtn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:background="?attr/selectableItemBackground"
             android:enabled="true"
+            android:background="?attr/selectableItemBackground"
             android:text="Save"
+            android:textColor="@color/black"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/cancelBtn"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:icon="@drawable/baseline_check_circle_outline_24"
+            app:iconTint="@color/green"
+            android:gravity="center"
+            app:iconGravity="textStart"/>
 
-        <android.widget.Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelBtn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:enabled="true"
             android:text="Cancel"
+            android:textColor="@color/black"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:icon="@drawable/outline_cancel_24"
+            app:iconTint="@color/gray"
+            android:gravity="center"
+            app:iconGravity="textStart"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

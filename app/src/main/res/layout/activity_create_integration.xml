@@ -24,31 +24,41 @@
             app:layout_constraintGuide_percent="0.5"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <android.widget.Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/saveBtn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:enabled="true"
             android:text="Create"
+            android:textColor="@color/black"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/cancelBtn"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:icon="@drawable/baseline_check_circle_outline_24"
+            app:iconTint="@color/green"
+            android:gravity="center"
+            app:iconGravity="textStart"/>
 
-        <android.widget.Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelBtn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:enabled="true"
             android:text="Cancel"
+            android:textColor="@color/black"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:icon="@drawable/outline_cancel_24"
+            app:iconTint="@color/gray"
+            android:gravity="center"
+            app:iconGravity="textStart"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -84,7 +94,7 @@
                     android:hint="Name"
                     android:imeOptions="actionDone"
                     android:inputType="textPersonName"
-                    android:text="test"
+                    android:text="My Automation"
                     android:textCursorDrawable="@null" />
             </com.google.android.material.textfield.TextInputLayout>
 

@@ -6,9 +6,8 @@ import android.os.Bundle
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.*
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -22,8 +21,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import chip.devicecontroller.AttestationInfo
 import chip.devicecontroller.DeviceAttestationDelegate
+import com.github.ybq.android.spinkit.SpinKitView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
@@ -69,7 +68,11 @@ class HomeFragment : Fragment() {
     // New device information dialog
     private lateinit var newDeviceAlertDialogBinding: FragmentNewDeviceBinding
 
-    private lateinit var spinner : Spinner
+    private lateinit var sensorFilterBtn: Button
+    private lateinit var actuatorFilterBtn: Button
+    private lateinit var spinner: SpinKitView
+
+    private var isSensorFilter = true
 
     // Tells whether a device attestation failure was ignored.
     // This is used in the "Device information" screen to warn the user about that fact.
@@ -84,10 +87,10 @@ class HomeFragment : Fragment() {
     ): View {
         setHasOptionsMenu(true)
 
-        val matterDeviceViewModel =
+        val HomeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
 
-        lifecycle.addObserver(matterDeviceViewModel)
+        lifecycle.addObserver(HomeViewModel)
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         // We need our own device attestation delegate as we currently only support attestation
@@ -96,13 +99,17 @@ class HomeFragment : Fragment() {
         // TODO: Look into supporting different Root CAs.
         setDeviceAttestationDelegate()
 
-        spinner = _binding.spinner
+        sensorFilterBtn = _binding.sensorFilterBtn
+        actuatorFilterBtn = _binding.actuatorFilterBtn
+        spinner = _binding.spinKit
 
-        // populate spinner with "Garden Node" and "Actuator"
-        val spinnerArray = arrayOf("Garden Node", "Actuator")
-        val adapter = context?.let { ArrayAdapter(it, android.R.layout.simple_spinner_item, spinnerArray) }
-        adapter?.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = adapter
+        if (isSensorFilter) {
+            sensorFilterBtn.setBackgroundResource(R.drawable.filter_btn_checked)
+            actuatorFilterBtn.setBackgroundResource(R.drawable.filter_btn_unchecked)
+        } else {
+            sensorFilterBtn.setBackgroundResource(R.drawable.filter_btn_unchecked)
+            actuatorFilterBtn.setBackgroundResource(R.drawable.filter_btn_checked)
+        }
 
         /** Devices List Recycle View **/
         val devicesListRecyclerView = binding.devicesList
@@ -111,21 +118,27 @@ class HomeFragment : Fragment() {
         devicesListRecyclerView.layoutManager = GridLayoutManager(context, 2)
         devicesListRecyclerView.adapter = HomeAdapter(requireContext(), listOf())
 
-        matterDeviceViewModel.devices.observe(viewLifecycleOwner) { devices ->
+        HomeViewModel.devices.observe(viewLifecycleOwner) { devices ->
 //            for (device in devices) {
 //                Timber.d("Device: ${device.label} is ${device.state}, online: ${device.online}")
 //            }
-            if (spinner.selectedItem.toString() == "Garden Node") {
+            if (isSensorFilter) {
                 devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
             } else {
                 devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
             }
 //            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices)
         }
+        HomeViewModel.loadedList.observe(viewLifecycleOwner) { loaded ->
+            if (loaded) {
+                spinner.visibility = View.GONE
+            } else {
+                spinner.visibility = View.VISIBLE
+            }
+        }
 
         /** Dynamic set UI elements **/
-        val addNewDeviceButton: FloatingActionButton = binding.addDevicesBtn
-
+        val addNewDeviceButton: ImageButton = binding.addDevicesBtn
 
         // Matter
         // Observe the devicesLiveData.
@@ -142,8 +155,8 @@ class HomeFragment : Fragment() {
 //                Timber.i("devicesUiModel.devices is empty")
 //            }
 
-            matterDeviceViewModel.updateDeviceStates(devicesUiModel.devices)
-            matterDeviceViewModel.addDevice(devicesUiModel.devices)
+            HomeViewModel.updateDeviceStates(devicesUiModel.devices)
+            HomeViewModel.addDevice(devicesUiModel.devices)
         }
         viewModel.commissionDeviceStatus.observe(viewLifecycleOwner) { status ->
             Timber.d("commissionDeviceStatus.observe: status [${status}]")
@@ -177,24 +190,28 @@ class HomeFragment : Fragment() {
                 }
             }
 
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Timber.d("spinner.onItemSelectedListener.onItemSelected")
+        sensorFilterBtn.setOnClickListener {
+            isSensorFilter = true
+            sensorFilterBtn.setBackgroundResource(R.drawable.filter_btn_checked)
+            actuatorFilterBtn.setBackgroundResource(R.drawable.filter_btn_unchecked)
 
-                if (matterDeviceViewModel.devices.value == null) {
-                    return
-                }
-
-                if (spinner.selectedItem.toString() == "Garden Node") {
-                    devicesListRecyclerView.adapter = HomeAdapter(requireContext(), matterDeviceViewModel.devices.value!!.filter { it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
-                } else {
-                    devicesListRecyclerView.adapter = HomeAdapter(requireContext(), matterDeviceViewModel.devices.value!!.filter { it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
-                }
+            if (HomeViewModel.devices.value == null) {
+                return@setOnClickListener
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                Timber.d("spinner.onItemSelectedListener.onNothingSelected")
+            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), HomeViewModel.devices.value!!.filter { it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+        }
+
+        actuatorFilterBtn.setOnClickListener {
+            isSensorFilter = false
+            sensorFilterBtn.setBackgroundResource(R.drawable.filter_btn_unchecked)
+            actuatorFilterBtn.setBackgroundResource(R.drawable.filter_btn_checked)
+
+            if (HomeViewModel.devices.value == null) {
+                return@setOnClickListener
             }
+
+            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), HomeViewModel.devices.value!!.filter { it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
         }
 
         // Setup Interactions Within Devices View

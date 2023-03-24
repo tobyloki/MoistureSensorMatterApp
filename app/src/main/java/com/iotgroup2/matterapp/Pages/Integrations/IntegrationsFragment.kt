@@ -4,9 +4,11 @@ import android.content.Intent
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.*
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
+import com.github.ybq.android.spinkit.SpinKitView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.iotgroup2.matterapp.Pages.Integrations.CreateIntegration.CreateIntegrationActivity
 import com.iotgroup2.matterapp.Pages.Integrations.CreateIntegration.CreateIntegrationViewModel
@@ -22,9 +24,8 @@ class IntegrationsFragment : Fragment() {
 
     private lateinit var _binding: FragmentIntegrationsBinding
 
-    private val matterViewModel: MatterActivityViewModel by viewModels()
-
-    private lateinit var addIntegrationBtn: FloatingActionButton
+    private lateinit var addIntegrationBtn: ImageButton
+    private lateinit var spinner: SpinKitView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,6 +42,7 @@ class IntegrationsFragment : Fragment() {
         val root: View = _binding.root
 
         addIntegrationBtn = _binding.addIntegrationBtn
+        spinner = _binding.spinKit
 
         addIntegrationBtn.setOnClickListener {
             val intent = Intent(activity, CreateIntegrationActivity::class.java)
@@ -52,6 +54,13 @@ class IntegrationsFragment : Fragment() {
 
         viewModel.integrations.observe(viewLifecycleOwner) {
             list.adapter = IntegrationsAdapter(requireContext(), it)
+        }
+        viewModel.loadedList.observe(viewLifecycleOwner) { loaded ->
+            if (loaded) {
+                spinner.visibility = View.GONE
+            } else {
+                spinner.visibility = View.VISIBLE
+            }
         }
 
         return root

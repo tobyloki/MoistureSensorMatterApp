@@ -31,6 +31,10 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
         constructor()
     }
 
+    var loadedList: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
+        value = false
+    }
+
     /** Lifecycle Handlers **/
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
@@ -93,6 +97,8 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
                     }
                 }
                 integrations.value = integrationList
+
+                loadedList.value = true
             } catch (e: Exception) {
                 Timber.e(e)
             }

@@ -184,6 +184,7 @@ class EditDeviceActivity : AppCompatActivity() {
         builder.setNegativeButton("Cancel") { dialog, which ->
             dialog.dismiss()
         }
+        builder.setIcon(R.drawable.baseline_warning_24)
         // change the color of the positive button
         val dialog: AlertDialog = builder.create()
         dialog.show()

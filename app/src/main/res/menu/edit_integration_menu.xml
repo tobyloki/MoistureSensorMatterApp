@@ -12,7 +12,7 @@
             <item
                 android:id="@+id/deleteIntegration"
                 android:icon="@drawable/ic_baseline_delete_forever_24"
-                android:title="Delete Integration"
+                android:title="Delete Automation"
                 app:showAsAction="always" />
         </menu>
     </item>

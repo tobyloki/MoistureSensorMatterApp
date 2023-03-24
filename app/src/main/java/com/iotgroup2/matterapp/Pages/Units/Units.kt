@@ -4,17 +4,19 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
+import com.davidmiguel.multistateswitch.MultiStateSwitch
 import com.iotgroup2.matterapp.R
 import com.iotgroup2.matterapp.databinding.ActivityDeviceEditBinding
 import com.iotgroup2.matterapp.databinding.ActivityUnitsBinding
 import com.iotgroup2.matterapp.shared.Utility.Utility
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.util.List
 
 class UnitsActivity : AppCompatActivity() {
     private lateinit var _binding: ActivityUnitsBinding
 
-    private lateinit var unitSw : Switch
+    private lateinit var unitSw : MultiStateSwitch
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,10 +27,12 @@ class UnitsActivity : AppCompatActivity() {
 
         val unit = Utility.getUnit(this)
         Timber.i("Unit: $unit")
-        unitSw.isChecked = unit
 
-        unitSw.setOnCheckedChangeListener { _, isChecked ->
-            setUnit(isChecked)
+        unitSw.selectState(if (unit) 1 else 0)
+
+        unitSw.addStatesFromStrings(List.of("Imperial (°F)", "Metric (°C)"))
+        unitSw.addStateListener { stateIndex, (text, selectedText, disabledText) ->
+            setUnit(stateIndex == 1)    // false is imperial, true is metric
         }
     }
 

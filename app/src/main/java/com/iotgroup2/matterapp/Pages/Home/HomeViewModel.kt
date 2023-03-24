@@ -21,7 +21,9 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
         value = listOf()
     }
 
-    private var loadedList = false
+    var loadedList: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
+        value = false
+    }
 
     private val viewModelJob = Job()
     private var coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -145,7 +147,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                 // Send event to update Devices View
                 _devices.postValue(mutableDevicesList)
 
-                loadedList = true
+                loadedList.postValue(true)
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -154,7 +156,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
 
     fun updateDeviceStates(matterDevices: List<DeviceUiModel>) {
         coroutineScope.launch {
-            while(!loadedList) {
+            while(!loadedList.value!!) {
                 delay(1000)
             }
 
@@ -177,7 +179,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
         // check if a new device is added (find first missing device)
         coroutineScope.launch {
             Timber.i("step 1")
-            while(!loadedList) {
+            while(!loadedList.value!!) {
                 // sleep for 1 second
                 withContext(Dispatchers.IO) {
                     Thread.sleep(1000)

@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
             Timber.i("FCM token: $token")
 
             // make a toast
-             Toast.makeText(this, token, Toast.LENGTH_LONG).show()
+//            Toast.makeText(this, token, Toast.LENGTH_LONG).show()
         })
     }
 

@@ -1,0 +1,7 @@
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#949494"> <!-- This is the ripple color -->
+
+    <item android:drawable="@drawable/filter_btn_unchecked_shape" />
+    <item android:drawable="@drawable/filter_btn_shadow" />
+
+</ripple>

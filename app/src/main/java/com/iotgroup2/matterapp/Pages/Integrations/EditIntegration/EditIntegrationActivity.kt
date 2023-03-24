@@ -5,12 +5,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.ybq.android.spinkit.SpinKitView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputLayout
 import com.iotgroup2.matterapp.Device
@@ -27,9 +30,10 @@ class EditIntegrationActivity : AppCompatActivity() {
     private lateinit var nameFieldLayout : TextInputLayout
     private lateinit var ifList: RecyclerView
     private lateinit var thenList: RecyclerView
-    private lateinit var ifAddBtn: FloatingActionButton
-    private lateinit var thenAddBtn: FloatingActionButton
+    private lateinit var ifAddBtn: ImageButton
+    private lateinit var thenAddBtn: ImageButton
     private lateinit var doneBtn: Button
+    private lateinit var spinner: SpinKitView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,7 @@ class EditIntegrationActivity : AppCompatActivity() {
         ifAddBtn = binding.ifAddBtn
         thenAddBtn = binding.thenAddBtn
         doneBtn = binding.doneBtn
+        spinner = binding.spinKit
 
         ifList.layoutManager = GridLayoutManager(this, 1)
         thenList.layoutManager = GridLayoutManager(this, 1)
@@ -69,6 +74,13 @@ class EditIntegrationActivity : AppCompatActivity() {
         viewModel.finishedDeleting.observe(this) {
             if (it) {
                 goBack()
+            }
+        }
+        viewModel.loadedList.observe(this) { loaded ->
+            if (loaded) {
+                spinner.visibility = View.GONE
+            } else {
+                spinner.visibility = View.VISIBLE
             }
         }
 
@@ -129,6 +141,7 @@ class EditIntegrationActivity : AppCompatActivity() {
         builder.setNegativeButton("Cancel") { dialog, which ->
             dialog.dismiss()
         }
+        builder.setIcon(R.drawable.baseline_warning_24)
         // change the color of the positive button
         val dialog: AlertDialog = builder.create()
         dialog.show()

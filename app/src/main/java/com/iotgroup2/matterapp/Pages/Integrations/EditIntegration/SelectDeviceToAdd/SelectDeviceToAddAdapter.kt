@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationActuatorActivity
@@ -30,10 +31,12 @@ class SelectDeviceToAddAdapter(var activity: Activity, var list : List<SelectDev
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image: ImageView
+        val backgroundContainer: ConstraintLayout
         val name : TextView
 
         init {
             this.image = itemView.findViewById(R.id.imageView)
+            this.backgroundContainer = itemView.findViewById(R.id.backgroundContainer)
             this.name = itemView.findViewById(R.id.nameTxt)
         }
     }
@@ -54,8 +57,10 @@ class SelectDeviceToAddAdapter(var activity: Activity, var list : List<SelectDev
 
         if (deviceType == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
             holder.image.setImageResource(R.drawable.soil_moisture)
+            holder.backgroundContainer.setBackgroundResource(R.drawable.sensor_card)
         } else {
             holder.image.setImageResource(R.drawable.sprinkler)
+            holder.backgroundContainer.setBackgroundResource(R.drawable.actuator_card)
         }
 
         holder.name.text = ifItem.label
