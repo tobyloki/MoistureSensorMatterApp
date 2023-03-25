@@ -25,7 +25,6 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:background="#A1FFFFFF"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
