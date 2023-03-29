@@ -11,8 +11,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat.getColor
 import androidx.recyclerview.widget.RecyclerView
 import com.iotgroup2.matterapp.Device
-import com.iotgroup2.matterapp.Pages.Home.Actuator.ActuatorActivity
-import com.iotgroup2.matterapp.Pages.Home.Sensor.DeviceActivity
+import com.iotgroup2.matterapp.Pages.Home.Device.Actuator.ActuatorActivity
+import com.iotgroup2.matterapp.Pages.Home.Device.Sensor.SensorActivity
 import com.iotgroup2.matterapp.R
 
 class HomeAdapter(var context: Context, var devices : List<HomeViewModel.DevicesListItem>)
@@ -69,7 +69,7 @@ class HomeAdapter(var context: Context, var devices : List<HomeViewModel.Devices
         // Setup onClick interaction to Devices Editor page
         holder.itemView.setOnClickListener {
             if (device.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
-                val intent = Intent(holder.itemView.context, DeviceActivity::class.java)
+                val intent = Intent(holder.itemView.context, SensorActivity::class.java)
                 intent.putExtra("deviceId", device.id)
                 intent.putExtra("deviceType", device.type)
                 intent.putExtra("deviceName", device.name)

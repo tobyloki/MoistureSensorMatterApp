@@ -1,4 +1,4 @@
-package com.iotgroup2.matterapp.Pages.Home.Sensor
+package com.iotgroup2.matterapp.Pages.Home.Device.Sensor
 
 import android.app.Activity
 import android.content.Intent
@@ -17,11 +17,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.iotgroup2.matterapp.Device.DeviceType
-import com.iotgroup2.matterapp.Pages.Home.Actuator.ActuatorViewModel
+import com.iotgroup2.matterapp.Pages.Home.Device.DeviceViewModel
 import com.iotgroup2.matterapp.Pages.Home.EditDevice.EditDeviceActivity
 import com.iotgroup2.matterapp.Pages.Units.UnitsActivity
 import com.iotgroup2.matterapp.R
-import com.iotgroup2.matterapp.databinding.ActivityDeviceBinding
+import com.iotgroup2.matterapp.databinding.ActivitySensorBinding
 import com.iotgroup2.matterapp.shared.MatterViewModel.DeviceUiModel
 import com.iotgroup2.matterapp.shared.MatterViewModel.DevicesUiModel
 import com.iotgroup2.matterapp.shared.MatterViewModel.MatterActivityViewModel
@@ -31,8 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class DeviceActivity : AppCompatActivity() {
-    private lateinit var _binding: ActivityDeviceBinding
+class SensorActivity : AppCompatActivity() {
+    private lateinit var _binding: ActivitySensorBinding
 
     private lateinit var deviceId: String
     private var deviceType: Int = DeviceType.TYPE_UNSPECIFIED_VALUE
@@ -56,7 +56,7 @@ class DeviceActivity : AppCompatActivity() {
     private val viewModel: MatterActivityViewModel by viewModels()
     private var deviceUiModel: DeviceUiModel? = null
 
-    private lateinit var actuatorViewModel: ActuatorViewModel
+    private lateinit var deviceViewModel: DeviceViewModel
 
     // The ActivityResultLauncher that launches the "shareDevice" activity in Google Play Services.
     private lateinit var shareDeviceLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -66,7 +66,7 @@ class DeviceActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityDeviceBinding.inflate(layoutInflater)
+        _binding = ActivitySensorBinding.inflate(layoutInflater)
         setContentView(_binding.root)
 
         // Background Work AlertDialog.
@@ -103,7 +103,7 @@ class DeviceActivity : AppCompatActivity() {
         onlineIcon.setTextColor(if (deviceOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
         onlineTxt.text = if (deviceOnline) "Online" else "Offline"
 
-        actuatorViewModel = ViewModelProvider(this).get(ActuatorViewModel::class.java)
+        deviceViewModel = ViewModelProvider(this).get(DeviceViewModel::class.java)
 
         // matter device list
         viewModel.devicesUiModelLiveData.observe(this) { devicesUiModel: DevicesUiModel ->
@@ -164,16 +164,16 @@ class DeviceActivity : AppCompatActivity() {
                 val resultCode = result.resultCode
                 if (resultCode == RESULT_OK) {
                     Timber.d("ShareDevice: Success")
-                    actuatorViewModel.shareDeviceSucceeded()
+                    deviceViewModel.shareDeviceSucceeded()
                 } else {
-                    actuatorViewModel.shareDeviceFailed(resultCode)
+                    deviceViewModel.shareDeviceFailed(resultCode)
                 }
             }
         // CODELAB SECTION END
 
         // CODELAB FEATURED BEGIN
         // The current status of the share device action.
-        actuatorViewModel.shareDeviceStatus.observe(this) { status ->
+        deviceViewModel.shareDeviceStatus.observe(this) { status ->
 //            val isButtonEnabled = status !is TaskStatus.InProgress
 //            updateShareDeviceButton(isButtonEnabled)
             if (status is TaskStatus.Failed) {
@@ -190,7 +190,7 @@ class DeviceActivity : AppCompatActivity() {
         // Note that when the IntentSender has been processed, it must be consumed to avoid a
         // configuration change that resends the observed values and re-triggers the device sharing.
         // CODELAB FEATURED BEGIN
-        actuatorViewModel.shareDeviceIntentSender.observe(this) { sender ->
+        deviceViewModel.shareDeviceIntentSender.observe(this) { sender ->
             Timber.d("shareDeviceIntentSender.observe is called with [${intentSenderToString(sender)}]")
             if (sender != null) {
                 // Share Device Step 4: Launch the activity described in the IntentSender that
@@ -198,7 +198,7 @@ class DeviceActivity : AppCompatActivity() {
                 // the device).
                 Timber.d("ShareDevice: Launch GPS activity to share device")
                 shareDeviceLauncher.launch(IntentSenderRequest.Builder(sender).build())
-                actuatorViewModel.consumeShareDeviceIntentSender()
+                deviceViewModel.consumeShareDeviceIntentSender()
 
                 // show alert
 //                val builder = MaterialAlertDialogBuilder(this).apply {
@@ -216,7 +216,7 @@ class DeviceActivity : AppCompatActivity() {
         // CODELAB FEATURED END
 
         // Background work alert dialog actions.
-        actuatorViewModel.backgroundWorkAlertDialogAction.observe(this) { action ->
+        deviceViewModel.backgroundWorkAlertDialogAction.observe(this) { action ->
             if (action is BackgroundWorkAlertDialogAction.Show) {
                 showBackgroundWorkAlertDialog(action.title, action.message)
             } else if (action is BackgroundWorkAlertDialogAction.Hide) {
@@ -315,22 +315,37 @@ class DeviceActivity : AppCompatActivity() {
                 true
             }
             R.id.shareDevice -> {
-                viewModel.stopMonitoringStateChanges()
-                try {
-                    actuatorViewModel.shareDevice(this, deviceId.toLong())
-                } catch (e: Exception) {
-                    Timber.e("Error: ${e.message}")
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Share Device")
+                builder.setMessage("Use device id [$deviceId] when adding the device to the hub. Click continue to proceed.")
+                builder.setPositiveButton("Continue") { dialog, which ->
+                    viewModel.stopMonitoringStateChanges()
+                    try {
+                        deviceViewModel.shareDevice(this, deviceId.toLong())
+                    } catch (e: Exception) {
+                        Timber.e("Error: ${e.message}")
 
-                    // show alert
-                    val builder = MaterialAlertDialogBuilder(this).apply {
-                        setTitle("Unable to share device")
-                        setMessage("Please check your device is connected properly to the app.")
-                        setPositiveButton("Close") { dialog, which ->
+                        // show alert
+                        val shareBuilder = MaterialAlertDialogBuilder(this).apply {
+                            setTitle("Unable to share device")
+                            setMessage("Please check your device is connected properly to the app.")
+                            setPositiveButton("Close") { dialog, which ->
+                            }
+                            setCancelable(true)
                         }
-                        setCancelable(true)
+                        shareBuilder.show()
                     }
-                    builder.show()
                 }
+                builder.setNegativeButton("Cancel") { dialog, which ->
+                    dialog.dismiss()
+                }
+                builder.setCancelable(true)
+                builder.setIcon(R.drawable.ic_baseline_share_24)
+                // change the color of the positive button
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(resources.getColor(R.color.cancel))
+
                 true
             }
             else -> super.onOptionsItemSelected(item)

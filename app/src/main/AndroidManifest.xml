@@ -66,17 +66,17 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name="com.iotgroup2.matterapp.Pages.Home.Sensor.DeviceActivity"
+            android:name="com.iotgroup2.matterapp.Pages.Home.Device.Sensor.SensorActivity"
             android:exported="false"
             android:label="Device"
-            android:parentActivityName="com.iotgroup2.matterapp.Pages.Home.Sensor.DeviceActivity"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Home.Device.Sensor.SensorActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name="com.iotgroup2.matterapp.Pages.Home.Actuator.ActuatorActivity"
+            android:name="com.iotgroup2.matterapp.Pages.Home.Device.Actuator.ActuatorActivity"
             android:exported="false"
             android:label="Device"
-            android:parentActivityName="com.iotgroup2.matterapp.Pages.Home.Actuator.ActuatorActivity"
+            android:parentActivityName="com.iotgroup2.matterapp.Pages.Home.Device.Actuator.ActuatorActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity

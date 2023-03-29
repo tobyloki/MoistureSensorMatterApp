@@ -1,4 +1,4 @@
-package com.iotgroup2.matterapp.Pages.Home.Actuator
+package com.iotgroup2.matterapp.Pages.Home.Device
 
 import android.app.Activity
 import android.content.IntentSender
@@ -24,7 +24,7 @@ import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
-class ActuatorViewModel
+class DeviceViewModel
 @Inject
 constructor(
     private val devicesRepository: DevicesRepository,

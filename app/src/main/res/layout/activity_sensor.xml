@@ -65,7 +65,7 @@
         android:clipChildren="false"
         android:clipToPadding="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/tempCardView"
@@ -364,22 +364,22 @@
                             app:layout_constraintTop_toTopOf="parent">
 
                             <TextView
-                                android:textColor="@color/white"
                                 android:id="@+id/pressureUnitTxt"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Bar"
+                                android:textColor="@color/white"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintTop_toTopOf="parent" />
 
                             <TextView
-                                android:textColor="@color/white"
                                 android:id="@+id/pressureValueTxt"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="5dp"
                                 android:text="35"
+                                android:textColor="@color/white"
                                 app:layout_constraintBottom_toBottomOf="@+id/pressureUnitTxt"
                                 app:layout_constraintEnd_toStartOf="@+id/pressureUnitTxt"
                                 app:layout_constraintStart_toStartOf="parent"
@@ -396,11 +396,12 @@
         android:id="@+id/linearLayout3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
         <TextView
             android:id="@+id/textView5"

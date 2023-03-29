@@ -133,8 +133,8 @@ class EditIntegrationActivity : AppCompatActivity() {
 
     private fun deleteIntegrationConfirmation() {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Delete Integration")
-        builder.setMessage("Are you sure you want to delete this integration?")
+        builder.setTitle("Delete Automation")
+        builder.setMessage("Are you sure you want to delete this automation?")
         builder.setPositiveButton("Confirm") { dialog, which ->
             viewModel.deleteIntegration()
         }
