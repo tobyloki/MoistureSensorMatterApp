@@ -109,13 +109,13 @@
 
             <ImageButton
                 android:id="@+id/ifAddBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="@string/add_a_new_device"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitXY"
                 android:src="@drawable/add_btn"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -125,7 +125,7 @@
                 android:id="@+id/thenTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:text="Then turn off these actuators. They will automatically turn on after the sensors are back to normal state and the configured timers have expired."
                 android:textColor="@color/black"
                 android:textSize="14sp"
@@ -148,17 +148,17 @@
 
             <ImageButton
                 android:id="@+id/thenAddBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="@string/add_a_new_device"
                 android:focusable="true"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:scaleType="fitXY"
                 android:src="@drawable/add_btn"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/thenRecyclerView"/>
+                app:layout_constraintTop_toBottomOf="@+id/thenRecyclerView" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
