@@ -296,10 +296,19 @@ class SensorActivity : AppCompatActivity() {
         onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
         onlineTxt.text = if (deviceData.isOnline) "Online" else "Offline"
 
-        tempValueTxt.text = deviceData.temperature.toString()
-        moistureValueTxt.text = deviceData.humidity.toString()
-        airPressureValueTxt.text = deviceData.pressure.toString()
-        batteryValueTxt.text = deviceData.battery.toString()
+        // TODO: if not all data is reported at the same time, then default values are automatically 0 for some reason
+        if (deviceData.temperature != 0) {
+            tempValueTxt.text = deviceData.temperature.toString()
+        }
+        if (deviceData.humidity != 0) {
+            moistureValueTxt.text = deviceData.humidity.toString()
+        }
+        if (deviceData.pressure != 0) {
+            airPressureValueTxt.text = deviceData.pressure.toString()
+        }
+        if (deviceData.battery != 0) {
+            batteryValueTxt.text = deviceData.battery.toString()
+        }
 
         Timber.i("Thing name: ${deviceData.thingName}")
     }

@@ -1,6 +1,7 @@
 package com.iotgroup2.matterapp
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -20,6 +21,7 @@ import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import com.iotgroup2.matterapp.databinding.ActivityMainBinding
 import com.iotgroup2.matterapp.shared.matter.VERSION_NAME
@@ -113,19 +115,21 @@ class MainActivity : AppCompatActivity() {
 
         // Firebase cloud messaging setup
         askNotificationPermission()
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Timber.e("Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-
-            // Get new FCM registration token
-            val token = task.result
-            Timber.i("FCM token: $token")
-
-            // make a toast
-//            Toast.makeText(this, token, Toast.LENGTH_LONG).show()
-        })
+        // TODO: Firebase is crashing at this point now
+//        FirebaseApp.initializeApp(this)
+//        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+//            if (!task.isSuccessful) {
+//                Timber.e("Fetching FCM registration token failed", task.exception)
+//                return@OnCompleteListener
+//            }
+//
+//            // Get new FCM registration token
+//            val token = task.result
+//            Timber.i("FCM token: $token")
+//
+//            // make a toast
+////            Toast.makeText(this, token, Toast.LENGTH_LONG).show()
+//        })
     }
 
     // Declare the launcher at the top of your Activity/Fragment:

@@ -81,13 +81,15 @@ class SensorActivityViewModel(private val deviceId: String) : ViewModel(), Defau
         timer.schedule(object : TimerTask() {
             override fun run() {
                 getSensorData()
+                startTimer()
             }
-        }, 0, 5000)
+        }, 10000)
     }
 
     private fun cancelTimer() {
         try {
             timer.cancel()
+            Timber.i("Timer cancelled")
         } catch (_: Exception) {}
     }
 }

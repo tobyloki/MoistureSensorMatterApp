@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -175,13 +176,32 @@ class ActuatorActivity : AppCompatActivity() {
         }
 
         multiStateSwitch.addStatesFromStrings(List.of("On", "Off"))
+//        multiStateSwitch.setOnClickListener(object : View.OnClickListener {
+//            override fun onClick(v: View?) {
+//                if (deviceUiModel == null) {
+//                    return
+//                }
+//                val deviceData = deviceUiModel!!
+//
+//                Timber.i("Hi there")
+//
+//                viewModel.updateDeviceStateOn(deviceData,
+//                    multiStateSwitch.getCurrentState().text == "On"
+//                )
+//            }
+//        })
         multiStateSwitch.addStateListener { stateIndex, (text, selectedText, disabledText) ->
             if (deviceUiModel == null) {
                 return@addStateListener
             }
             val deviceData = deviceUiModel!!
 
-            viewModel.updateDeviceStateOn(deviceData, stateIndex == 0)
+            // this if statement prevents the app from constantly toggling between states b/c it gets confused after updating state and new device state received that is being read which causes it to trigger again
+            // NOTE: this is addStateListener which listens to any state change, not just when I click it
+            if ((stateIndex == 0) != deviceData.isOn) {
+                Timber.i("State changed")
+                viewModel.updateDeviceStateOn(deviceData, stateIndex == 0)
+            }
         }
     }
 

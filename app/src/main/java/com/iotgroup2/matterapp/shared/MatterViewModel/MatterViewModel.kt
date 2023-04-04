@@ -428,17 +428,15 @@ constructor(
 
     // MARK: - State control
     fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean) {
-        Timber.d("updateDeviceStateOn: Device [${deviceUiModel}]  isOn [${isOn}]")
+        Timber.d("updateDeviceStateOn: isOn [${isOn}]")
+        val deviceId = deviceUiModel.device.deviceId
         viewModelScope.launch {
+            // CODELAB: toggle
+            Timber.d("Handling real device")
             try {
-                Timber.d("Handling real device")
-                clustersHelper.setOnOffDeviceStateOnOffCluster(
-                    deviceUiModel.device.deviceId,
-                    isOn,
-                    1
-                )
+                clustersHelper.setOnOffDeviceStateOnOffCluster(deviceId, isOn, 1)
                 devicesStateRepository.updateDeviceState(
-                    deviceUiModel.device.deviceId,
+                    deviceId,
                     null,
                     isOn,
                     null,
@@ -447,9 +445,10 @@ constructor(
                     null,
                     null
                 )
-            } catch (e: Exception) {
-                Timber.e(e)
+            } catch (e: Throwable) {
+                Timber.e("Failed setting on/off state")
             }
+            // CODELAB SECTION END
         }
     }
 

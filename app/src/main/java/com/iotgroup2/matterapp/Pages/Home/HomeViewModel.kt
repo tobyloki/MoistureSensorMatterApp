@@ -62,6 +62,10 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
 
+        getDevicesFromBackend()
+    }
+
+    private fun getDevicesFromBackend() {
         coroutineScope.launch {
             try {
                 Timber.i("Sending http request to graphql endpoint...")
@@ -116,7 +120,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                     val actuator = actuators.getJSONObject(i)
                     val _version = actuator.getInt("_version")
                     try {
-                    val _deleted = actuator.getBoolean("_deleted")
+                        val _deleted = actuator.getBoolean("_deleted")
                         if (!_deleted) {
                             itemList.add(Item(actuator.getString("id"), "", actuator.getString("name"), Device.DeviceType.TYPE_UNKNOWN_VALUE, _version))
                         }
@@ -217,7 +221,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         val thingNameHex = String.format("%04x", thingName)
 
                         if (item.thingName != thingNameHex) {
-                            if (deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
+                            if (deviceType == DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_PRESSURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                                 if(thingName != 0) {
                                     Timber.i("Device thingName has changed. Updating thingName from ${item.thingName} to $thingNameHex")
 
@@ -291,13 +295,18 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
     }
 
     private fun addDeviceToBackend(id: String, thingName: String, name: String, deviceType: Int) {
+        if (deviceType == DeviceType.TYPE_UNSPECIFIED_VALUE || deviceType == DeviceType.TYPE_UNKNOWN_VALUE) {
+            Timber.i("Device type is unspecified or unknown. Not adding to backend.")
+            return
+        }
+
         coroutineScope.launch {
             try {
                 Timber.i("Sending http request to graphql endpoint...")
 
                 var query = ""
                 var thingNameQuery = ""
-                if (deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
+                if (deviceType == DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_PRESSURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
                     query = "createSensor"
                     thingNameQuery = "thingName: \"$thingName\","
                 } else {
@@ -314,6 +323,9 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                 val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
+
+                // refresh devices list
+                getDevicesFromBackend()
             } catch (e: Exception) {
                 Timber.e(e)
             }
