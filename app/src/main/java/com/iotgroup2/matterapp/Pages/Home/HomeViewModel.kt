@@ -9,7 +9,7 @@ import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
-import shared.Utility.HTTP
+import shared.Utility.HTTPGraphQL
 import timber.log.Timber
 
 
@@ -87,7 +87,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 val root = JSONObject(httpResponse).getJSONObject("data")
@@ -282,7 +282,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         "}")
                 Timber.i("json: $json")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
             } catch (e: Exception) {
                 Timber.e(e)
@@ -312,7 +312,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         "}")
                 Timber.i("json: $json")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
             } catch (e: Exception) {
                 Timber.e(e)

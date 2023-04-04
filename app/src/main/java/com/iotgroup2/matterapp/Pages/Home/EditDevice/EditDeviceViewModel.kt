@@ -1,9 +1,7 @@
 package com.iotgroup2.matterapp.Pages.Home.EditDevice
 
-import android.view.InputDevice.getDevice
 import androidx.lifecycle.*
 import com.iotgroup2.matterapp.Device
-import com.iotgroup2.matterapp.Pages.Home.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,7 +9,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
-import shared.Utility.HTTP
+import shared.Utility.HTTPGraphQL
 import timber.log.Timber
 
 class EditDeviceViewModelFactory(private val deviceId: String, private val deviceType: Int) : ViewModelProvider.Factory {
@@ -68,9 +66,8 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
-                Timber.i("data: $httpResponse"
-                )
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
+                Timber.i("data: $httpResponse")
                 val data = JSONObject(httpResponse).getJSONObject("data").getJSONObject(query)
                 _version = data.getInt("_version")
             } catch (e: Exception) {
@@ -103,7 +100,7 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 finishedSaving.value = true
@@ -139,7 +136,7 @@ class EditDeviceViewModel(val deviceId: String, val deviceType: Int) : ViewModel
                         "}")
                 Timber.i("json: $json")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 finishedDeleting.value = true

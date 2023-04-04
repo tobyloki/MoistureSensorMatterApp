@@ -5,7 +5,7 @@ import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
-import shared.Utility.HTTP
+import shared.Utility.HTTPGraphQL
 import timber.log.Timber
 import java.io.Serializable
 
@@ -68,7 +68,7 @@ class IntegrationsViewModel : ViewModel(), DefaultLifecycleObserver {
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 val data = JSONObject(httpResponse).getJSONObject("data").getJSONObject("listIntegrations").getJSONArray("items")

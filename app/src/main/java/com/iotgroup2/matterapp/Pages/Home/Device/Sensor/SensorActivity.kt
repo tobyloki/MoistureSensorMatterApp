@@ -29,6 +29,7 @@ import com.iotgroup2.matterapp.shared.Utility.Utility
 import com.iotgroup2.matterapp.shared.matter.*
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.util.*
 
 @AndroidEntryPoint
 class SensorActivity : AppCompatActivity() {
@@ -63,6 +64,8 @@ class SensorActivity : AppCompatActivity() {
 
     // Background work dialog.
     private lateinit var backgroundWorkAlertDialog: AlertDialog
+
+    private lateinit var sensorActivityViewModel: SensorActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +107,21 @@ class SensorActivity : AppCompatActivity() {
         onlineTxt.text = if (deviceOnline) "Online" else "Offline"
 
         deviceViewModel = ViewModelProvider(this).get(DeviceViewModel::class.java)
+        lifecycle.addObserver(deviceViewModel)
+
+        sensorActivityViewModel = ViewModelProvider(this, SensorActivityViewModelFactory(deviceId)).get(
+            SensorActivityViewModel::class.java)
+        lifecycle.addObserver(sensorActivityViewModel)
+
+        sensorActivityViewModel.temperature.observe(this) {
+            tempValueTxt.text = it.toString()
+        }
+        sensorActivityViewModel.pressure.observe(this) {
+            airPressureValueTxt.text = it.toString()
+        }
+        sensorActivityViewModel.moisture.observe(this) {
+            moistureValueTxt.text = it.toString()
+        }
 
         // matter device list
         viewModel.devicesUiModelLiveData.observe(this) { devicesUiModel: DevicesUiModel ->
@@ -265,6 +283,9 @@ class SensorActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
+        // start the timer that'll fetch sensor data from timestream
+        sensorActivityViewModel.startTimer()
+
         if (deviceUiModel == null) {
             return
         }

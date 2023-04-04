@@ -86,6 +86,7 @@ class ActuatorActivity : AppCompatActivity() {
         onlineTxt.text = if (deviceOnline) "Online" else "Offline"
 
         deviceViewModel = ViewModelProvider(this).get(DeviceViewModel::class.java)
+        lifecycle.addObserver(deviceViewModel)
 
         // matter device list
         viewModel.devicesUiModelLiveData.observe(this) { devicesUiModel: DevicesUiModel ->

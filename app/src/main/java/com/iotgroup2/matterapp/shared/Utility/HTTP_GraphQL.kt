@@ -22,12 +22,12 @@ private val retrofit =
         .baseUrl(BASE_URL)
         .build()
 
-interface ApiService {
+interface GraphQLApiService {
     @POST("graphql")
     @Headers("Content-Type: application/json", "x-api-key: da2-gnn7q3s2izhrnis7hypn3zt7ue")
     fun query(@Body data: RequestBody): Deferred<String>;
 }
 
-object HTTP {
-    val retrofitService: ApiService by lazy { retrofit.create(ApiService::class.java) }
+object HTTPGraphQL {
+    val retrofitService: GraphQLApiService by lazy { retrofit.create(GraphQLApiService::class.java) }
 }

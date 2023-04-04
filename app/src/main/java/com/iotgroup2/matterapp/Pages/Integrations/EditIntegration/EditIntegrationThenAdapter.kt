@@ -3,7 +3,6 @@ package com.iotgroup2.matterapp.Pages.Integrations.EditIntegration
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -21,7 +20,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
-import shared.Utility.HTTP
+import shared.Utility.HTTPGraphQL
 import timber.log.Timber
 
 class EditIntegrationThenAdapter(
@@ -99,7 +98,7 @@ class EditIntegrationThenAdapter(
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 // remove item from list

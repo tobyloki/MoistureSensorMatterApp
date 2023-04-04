@@ -11,7 +11,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.iotgroup2.matterapp.Device
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationActuatorActivity
-import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.EditIntegrationViewModel
 import com.iotgroup2.matterapp.Pages.Integrations.EditIntegration.EditIntegrationActuator.Method
 import com.iotgroup2.matterapp.R
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +20,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
-import shared.Utility.HTTP
+import shared.Utility.HTTPGraphQL
 import timber.log.Timber
 
 class SelectDeviceToAddAdapter(var activity: Activity, var list : List<SelectDeviceToAddViewModel.SelectDeviceItem>, var deviceType : Int, var integrationId : String)
@@ -94,7 +93,7 @@ class SelectDeviceToAddAdapter(var activity: Activity, var list : List<SelectDev
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 activity.finish()

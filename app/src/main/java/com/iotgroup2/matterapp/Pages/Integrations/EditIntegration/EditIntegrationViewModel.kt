@@ -1,14 +1,12 @@
 package com.iotgroup2.matterapp.Pages.Integrations.EditIntegration
 
 import androidx.lifecycle.*
-import com.iotgroup2.matterapp.Device
-import com.iotgroup2.matterapp.Pages.Integrations.IntegrationsViewModel
 import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import shared.Utility.HTTP
+import shared.Utility.HTTPGraphQL
 import timber.log.Timber
 import java.io.Serializable
 
@@ -117,7 +115,7 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 val root = JSONObject(httpResponse).getJSONObject("data").getJSONObject("getIntegration")
@@ -187,7 +185,7 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
                             "}")
                     Timber.i("Sending: $json")
                     val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                    val httpResponse = HTTP.retrofitService.query(body).await()
+                    val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                     Timber.i("data: $httpResponse")
 
                     finishedSaving.value = true
@@ -212,7 +210,7 @@ class EditIntegrationViewModel(private val integrationId: String) : ViewModel(),
                         "  }\n" +
                         "}")
                 val body: RequestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
-                val httpResponse = HTTP.retrofitService.query(body).await()
+                val httpResponse = HTTPGraphQL.retrofitService.query(body).await()
                 Timber.i("data: $httpResponse")
 
                 finishedDeleting.value = true
