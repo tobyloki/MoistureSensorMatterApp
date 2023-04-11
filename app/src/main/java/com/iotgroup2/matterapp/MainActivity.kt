@@ -72,8 +72,11 @@ class MainActivity : AppCompatActivity() {
             unknown = "unknown",
         colorTempLight = "colorTempLight",
         temperatureSensor = "temperatureSensor",
-        pressureSensor = "pressureSensor",
-        humiditySensor = "humiditySensor")
+        humiditySensor = "humiditySensor",
+            pressureSensor = "pressureSensor",
+            soilMoistureSensor = "soilMoistureSensor",
+            lightSensor = "lightSensor"
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

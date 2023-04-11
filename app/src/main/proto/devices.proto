@@ -36,8 +36,10 @@ message Device {
         TYPE_OUTLET = 3;
         TYPE_COLOR_TEMP_LIGHT = 4;
         TYPE_TEMPERATURE_SENSOR = 5;
-        TYPE_PRESSURE_SENSOR = 6;
-        TYPE_HUMIDITY_SENSOR = 7;
+        TYPE_HUMIDITY_SENSOR = 6;
+        TYPE_PRESSURE_SENSOR = 7;
+        TYPE_SOIL_MOISTURE_SENSOR = 8;
+        TYPE_LIGHT_SENSOR = 9;
     }
     DeviceType deviceType = 4;
 

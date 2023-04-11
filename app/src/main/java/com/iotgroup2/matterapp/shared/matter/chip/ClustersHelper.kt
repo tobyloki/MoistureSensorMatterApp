@@ -451,35 +451,6 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
         return ChipClusters.TemperatureMeasurementCluster(devicePtr, endpoint)
     }
 
-    suspend fun getDeviceStatePressureMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
-        Timber.d("getDeviceStatePressureMeasurementCluster())")
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Timber.e("Can't get connectedDevicePointer.")
-                return null
-            }
-        return suspendCoroutine { continuation ->
-            getPressureMeasurementClusterForDevice(connectedDevicePtr, endpoint)
-                .readMeasuredValueAttribute(
-                    object : ChipClusters.PressureMeasurementCluster.MeasuredValueAttributeCallback {
-                        override fun onSuccess(value: Int?) {
-                            continuation.resume(value)
-                        }
-                        override fun onError(ex: Exception) {
-                            Timber.e(ex, "getPressureMeasurementClusterForDevice command failure")
-                            ex.printStackTrace()
-                            continuation.resumeWithException(ex)
-                        }
-                    })
-        }
-    }
-
-    private fun getPressureMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.PressureMeasurementCluster {
-        return ChipClusters.PressureMeasurementCluster(devicePtr, endpoint)
-    }
-
     suspend fun getDeviceStateHumidityMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
         Timber.d("getDeviceStateHumidityMeasurementCluster())")
         val connectedDevicePtr =
@@ -557,6 +528,93 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
                         }
                     })
         }
+    }
+
+    suspend fun getDeviceStatePressureMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStatePressureMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getPressureMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMeasuredValueAttribute(
+                    object : ChipClusters.PressureMeasurementCluster.MeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getPressureMeasurementClusterForDevice command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    private fun getPressureMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.PressureMeasurementCluster {
+        return ChipClusters.PressureMeasurementCluster(devicePtr, endpoint)
+    }
+
+    suspend fun getDeviceStateSoilMoistureMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStateSoilMoistureMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getSoilMoistureMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMeasuredValueAttribute(
+                    object : ChipClusters.FlowMeasurementCluster.MeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getDeviceStateSoilMoistureMeasurementCluster command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    private fun getSoilMoistureMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.FlowMeasurementCluster {
+        return ChipClusters.FlowMeasurementCluster(devicePtr, endpoint)
+    }
+
+    suspend fun getDeviceStateLightMeasurementCluster(deviceId: Long, endpoint: Int): Int? {
+        Timber.d("getDeviceStateLightMeasurementCluster())")
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+        return suspendCoroutine { continuation ->
+            getLightMeasurementClusterForDevice(connectedDevicePtr, endpoint)
+                .readMeasuredValueAttribute(
+                    object : ChipClusters.IlluminanceMeasurementCluster.MeasuredValueAttributeCallback {
+                        override fun onSuccess(value: Int?) {
+                            continuation.resume(value)
+                        }
+                        override fun onError(ex: Exception) {
+                            Timber.e(ex, "getDeviceStateLightMeasurementCluster command failure")
+                            ex.printStackTrace()
+                            continuation.resumeWithException(ex)
+                        }
+                    })
+        }
+    }
+
+    private fun getLightMeasurementClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.IlluminanceMeasurementCluster {
+        return ChipClusters.IlluminanceMeasurementCluster(devicePtr, endpoint)
     }
 
   // -----------------------------------------------------------------------------------------------

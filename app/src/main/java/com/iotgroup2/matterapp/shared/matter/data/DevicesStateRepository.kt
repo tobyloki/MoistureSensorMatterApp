@@ -59,7 +59,7 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
     get() = _lastUpdatedDeviceState
 
   @SuppressLint("SuspiciousIndentation")
-  suspend fun addDeviceState(deviceId: Long, isOnline: Boolean?, isOn: Boolean?, temperature: Int?, pressure: Int?, humidity: Int?, thingName: Int?, battery: Int?) {
+  suspend fun addDeviceState(deviceId: Long, isOnline: Boolean?, isOn: Boolean?, temperature: Int?, humidity: Int?, pressure: Int?, soilMoisture: Int?, light: Int?, thingName: Int?, battery: Int?) {
     val deviceState =
         DeviceState.newBuilder()
             .setDeviceId(deviceId)
@@ -76,11 +76,17 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
       if (temperature != null) {
           deviceState.setTemperature(temperature)
       }
+      if (humidity != null) {
+          deviceState.setHumidity(humidity)
+      }
         if (pressure != null) {
             deviceState.setPressure(pressure)
         }
-        if (humidity != null) {
-            deviceState.setHumidity(humidity)
+        if (soilMoisture != null) {
+            deviceState.setSoilMoisture(soilMoisture)
+        }
+        if (light != null) {
+            deviceState.setLight(light)
         }
       if (thingName != null) {
           deviceState.setThingName(thingName)
@@ -102,8 +108,10 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
       isOnline: Boolean?,
       isOn: Boolean?,
       temperature: Int?,
-        pressure: Int?,
-        humidity: Int?,
+      humidity: Int?,
+      pressure: Int?,
+      soilMoisture: Int?,
+      light: Int?,
       thingName: Int?,
       battery: Int?
   ) {
@@ -123,11 +131,17 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
         if (temperature != null) {
             deviceState.setTemperature(temperature)
         }
+      if (humidity != null) {
+          deviceState.setHumidity(humidity)
+      }
         if (pressure != null) {
             deviceState.setPressure(pressure)
         }
-        if (humidity != null) {
-            deviceState.setHumidity(humidity)
+        if (soilMoisture != null) {
+            deviceState.setSoilMoisture(soilMoisture)
+        }
+        if (light != null) {
+            deviceState.setLight(light)
         }
         if (thingName != null) {
             deviceState.setThingName(thingName)
@@ -155,7 +169,7 @@ class DevicesStateRepository @Inject constructor(@ApplicationContext context: Co
     if (!updateDone) {
       Timber.w(
           "We did not find device [${deviceId}] in devicesStateRepository; it should have been there???")
-      addDeviceState(deviceId, isOnline = isOnline, isOn = isOn, temperature = temperature, pressure = pressure, humidity = humidity, thingName = thingName, battery = battery)
+      addDeviceState(deviceId, isOnline = isOnline, isOn = isOn, temperature = temperature, humidity = humidity, pressure = pressure, soilMoisture = soilMoisture, light = light, thingName = thingName, battery = battery)
     }
   }
 

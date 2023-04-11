@@ -42,17 +42,25 @@ class SensorActivity : AppCompatActivity() {
     private lateinit var nameTxt: TextView
     private lateinit var onlineIcon: TextView
     private lateinit var onlineTxt: TextView
+
     private lateinit var tempValueTxt: TextView
     private lateinit var tempUnitTxt: TextView
-    private lateinit var moistureValueTxt: TextView
-    private lateinit var moistureUnitTxt: TextView
-    private lateinit var airPressureValueTxt: TextView
-    private lateinit var airPressureUnitTxt: TextView
+    private lateinit var humidityValueTxt: TextView
+    private lateinit var humidityUnitTxt: TextView
+    private lateinit var pressureValueTxt: TextView
+    private lateinit var pressureUnitTxt: TextView
+    private lateinit var soilMoistureValueTxt: TextView
+    private lateinit var soilMoistureUnitTxt: TextView
+    private lateinit var lightValueTxt: TextView
+    private lateinit var lightUnitTxt: TextView
+
     private lateinit var batteryValueTxt: TextView
 
     private lateinit var tempInfoBtn: ImageButton
-    private lateinit var moistureInfoBtn: ImageButton
-    private lateinit var airPressureInfoBtn: ImageButton
+    private lateinit var humidityInfoBtn: ImageButton
+    private lateinit var pressureInfoBtn: ImageButton
+    private lateinit var soilMoistureInfoBtn: ImageButton
+    private lateinit var lightInfoBtn: ImageButton
 
     private val viewModel: MatterActivityViewModel by viewModels()
     private var deviceUiModel: DeviceUiModel? = null
@@ -80,15 +88,22 @@ class SensorActivity : AppCompatActivity() {
         onlineTxt = _binding.onlineTxt
         tempValueTxt = _binding.tempValueTxt
         tempUnitTxt = _binding.tempUnitTxt
-        moistureValueTxt = _binding.moistureValueTxt
-        moistureUnitTxt = _binding.moistureUnitTxt
-        airPressureValueTxt = _binding.pressureValueTxt
-        airPressureUnitTxt = _binding.pressureUnitTxt
+        humidityValueTxt = _binding.humidityValueTxt
+        humidityUnitTxt = _binding.humidityUnitTxt
+        pressureValueTxt = _binding.pressureValueTxt
+        pressureUnitTxt = _binding.pressureUnitTxt
+        soilMoistureValueTxt = _binding.soilMoistureValueTxt
+        soilMoistureUnitTxt = _binding.soilMoistureUnitTxt
+        lightValueTxt = _binding.lightValueTxt
+        lightUnitTxt = _binding.lightUnitTxt
+
         batteryValueTxt = _binding.batteryValueTxt
 
         tempInfoBtn = _binding.tempInfoBtn
-        moistureInfoBtn = _binding.moistureInfoBtn
-        airPressureInfoBtn = _binding.pressureInfoBtn
+        humidityInfoBtn = _binding.humidityInfoBtn
+        pressureInfoBtn = _binding.pressureInfoBtn
+        soilMoistureInfoBtn = _binding.soilMoistureInfoBtn
+        lightInfoBtn = _binding.lightInfoBtn
 
         /* Initialize Data */
         val extras: Bundle? = intent.extras
@@ -113,14 +128,31 @@ class SensorActivity : AppCompatActivity() {
             SensorActivityViewModel::class.java)
         lifecycle.addObserver(sensorActivityViewModel)
 
+        // TODO: temporarily disabled until backend and hub updated to handle all 5 sensors
         sensorActivityViewModel.temperature.observe(this) {
-            tempValueTxt.text = it.toString()
+            if (it != null) {
+                tempValueTxt.text = (it / 100).toString()
+            }
+        }
+        sensorActivityViewModel.humidity.observe(this) {
+            if (it != null) {
+                humidityValueTxt.text = (it / 100).toString()
+            }
         }
         sensorActivityViewModel.pressure.observe(this) {
-            airPressureValueTxt.text = it.toString()
+            if (it != null) {
+                pressureValueTxt.text = (it / 10).toString()
+            }
         }
-        sensorActivityViewModel.moisture.observe(this) {
-            moistureValueTxt.text = it.toString()
+        sensorActivityViewModel.soilMoisture.observe(this) {
+            if (it != null) {
+                soilMoistureValueTxt.text = (it / 10).toString()
+            }
+        }
+        sensorActivityViewModel.light.observe(this) {
+            if (it != null) {
+                lightValueTxt.text = it.toString()
+            }
         }
 
         // matter device list
@@ -146,22 +178,44 @@ class SensorActivity : AppCompatActivity() {
                 .show()
         }
 
-        moistureInfoBtn.setOnClickListener {
+        humidityInfoBtn.setOnClickListener {
             // show alert with info
             AlertDialog.Builder(this)
                 .setTitle("Moisture")
-                .setMessage("This metric reports the moisture level of the soil.")
+                .setMessage("This metric reports the humidity of the air.")
                 .setPositiveButton("Close") { dialog, which -> }
                 .setIcon(R.drawable.ic_baseline_info_24)
                 .setCancelable(true)
                 .show()
         }
 
-        airPressureInfoBtn.setOnClickListener {
+        pressureInfoBtn.setOnClickListener {
             // show alert with info
             AlertDialog.Builder(this)
                 .setTitle("Air Pressure")
                 .setMessage("This metric reports the pressure of the air.")
+                .setPositiveButton("Close") { dialog, which -> }
+                .setIcon(R.drawable.ic_baseline_info_24)
+                .setCancelable(true)
+                .show()
+        }
+
+        soilMoistureInfoBtn.setOnClickListener {
+            // show alert with info
+            AlertDialog.Builder(this)
+                .setTitle("Soil Moisture")
+                .setMessage("This metric reports the moisture of the soil.")
+                .setPositiveButton("Close") { dialog, which -> }
+                .setIcon(R.drawable.ic_baseline_info_24)
+                .setCancelable(true)
+                .show()
+        }
+
+        lightInfoBtn.setOnClickListener {
+            // show alert with info
+            AlertDialog.Builder(this)
+                .setTitle("Light")
+                .setMessage("This metric reports the light intensity.")
                 .setPositiveButton("Close") { dialog, which -> }
                 .setIcon(R.drawable.ic_baseline_info_24)
                 .setCancelable(true)
@@ -298,14 +352,21 @@ class SensorActivity : AppCompatActivity() {
 
         // TODO: if not all data is reported at the same time, then default values are automatically 0 for some reason
         if (deviceData.temperature != 0) {
-            tempValueTxt.text = deviceData.temperature.toString()
+            tempValueTxt.text = (deviceData.temperature / 100).toString()
         }
         if (deviceData.humidity != 0) {
-            moistureValueTxt.text = deviceData.humidity.toString()
+            humidityValueTxt.text = (deviceData.humidity / 100).toString()
         }
         if (deviceData.pressure != 0) {
-            airPressureValueTxt.text = deviceData.pressure.toString()
+            pressureValueTxt.text = (deviceData.pressure / 10).toString()
         }
+        if (deviceData.soilMoisture != 0) {
+            soilMoistureValueTxt.text = (deviceData.soilMoisture / 10).toString()
+        }
+        if (deviceData.light != 0) {
+            lightValueTxt.text = deviceData.light.toString()
+        }
+
         if (deviceData.battery != 0) {
             batteryValueTxt.text = deviceData.battery.toString()
         }

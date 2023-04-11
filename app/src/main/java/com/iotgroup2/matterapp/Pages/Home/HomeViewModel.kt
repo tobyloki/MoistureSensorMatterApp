@@ -221,7 +221,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
                         val thingNameHex = String.format("%04x", thingName)
 
                         if (item.thingName != thingNameHex) {
-                            if (deviceType == DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_PRESSURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
+                            if (deviceType == DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_PRESSURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE || deviceType == DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_LIGHT_SENSOR_VALUE) {
                                 if(thingName != 0) {
                                     Timber.i("Device thingName has changed. Updating thingName from ${item.thingName} to $thingNameHex")
 
@@ -306,7 +306,7 @@ class HomeViewModel : ViewModel(), DefaultLifecycleObserver {
 
                 var query = ""
                 var thingNameQuery = ""
-                if (deviceType == DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_PRESSURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE) {
+                if (deviceType == DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_PRESSURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_HUMIDITY_SENSOR_VALUE || deviceType == DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE || deviceType == DeviceType.TYPE_LIGHT_SENSOR_VALUE) {
                     query = "createSensor"
                     thingNameQuery = "thingName: \"$thingName\","
                 } else {

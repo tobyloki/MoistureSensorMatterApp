@@ -25,8 +25,10 @@ import com.iotgroup2.matterapp.shared.matter.chip.ClustersHelper
 import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.HumidityMaxMeasurementAttribute
 import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.HumidityMeasurementAttribute
 import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.HumidityMinMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.LightMeasurementAttribute
 import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.OnOffAttribute
 import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.PressureMeasurementAttribute
+import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.SoilMoistureMeasurementAttribute
 import com.iotgroup2.matterapp.shared.matter.chip.MatterConstants.TemperatureMeasurementAttribute
 import com.iotgroup2.matterapp.shared.matter.chip.SubscriptionHelper
 import com.iotgroup2.matterapp.shared.matter.commissioning.AppCommissioningService
@@ -51,8 +53,11 @@ data class DeviceUiModel(
     var isOn: Boolean,
 
     var temperature: Int,
-    var pressure: Int,
     var humidity: Int,
+    var pressure: Int,
+    var soilMoisture: Int,
+    var light: Int,
+
     var thingName: Int,
     var battery: Int
 )
@@ -120,10 +125,10 @@ constructor(
             }
             if (state == null) {
                 Timber.d("    deviceId setting default value for state")
-                devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false, temperature = 0, pressure = 0, humidity = 0, thingName = 0, battery = 0))
+                devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false, temperature = 0, humidity = 0, pressure = 0, soilMoisture = 0, light = 0, thingName = 0, battery = 0))
             } else {
                 Timber.d("    deviceId setting its own value for state")
-                devicesUiModel.add(DeviceUiModel(device, /*state.online*/ true, state.on, state.temperature, state.pressure, state.humidity, state.thingName, state.battery))
+                devicesUiModel.add(DeviceUiModel(device, /*state.online*/ true, state.on, state.temperature, state.humidity, state.pressure, state.soilMoisture, state.light, state.thingName, state.battery))
             }
         }
         return devicesUiModel
@@ -169,7 +174,7 @@ constructor(
                             convertToAppDeviceType(result.commissionedDeviceDescriptor.deviceType.toLong()))
                         .build())
                 Timber.d("Commissioning: Adding device state to repository: isOnline:true isOn:false")
-                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false, temperature = null, pressure = null, humidity = null, thingName = null, battery = null)
+                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false, temperature = null, humidity = null, pressure = null, soilMoisture = null, light = null, thingName = null, battery = null)
                 _commissionDeviceStatus.postValue(
                     TaskStatus.Completed("Device added: [${deviceId}] [${deviceName}]"))
             } catch (e: Exception) {
@@ -367,25 +372,41 @@ constructor(
                             Timber.e(e)
                         }
 
+                        var humidity: Int? = null
+                        try {
+                            humidity = clustersHelper.getDeviceStateHumidityMeasurementCluster(device.deviceId, 2)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
                         var pressure: Int? = null
                         try {
-                            pressure = clustersHelper.getDeviceStatePressureMeasurementCluster(device.deviceId, 2)
+                            pressure = clustersHelper.getDeviceStatePressureMeasurementCluster(device.deviceId, 3)
                             Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
                         } catch (e: Exception) {
                             Timber.e(e)
                         }
 
-                        var humidity: Int? = null
+                        var soilMoisture: Int? = null
                         try {
-                            humidity = clustersHelper.getDeviceStateHumidityMeasurementCluster(device.deviceId, 3)
-                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
+                            soilMoisture = clustersHelper.getDeviceStateSoilMoistureMeasurementCluster(device.deviceId, 4)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [soilMoisture: ${soilMoisture}]")
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+
+                        var light: Int? = null
+                        try {
+                            light = clustersHelper.getDeviceStateLightMeasurementCluster(device.deviceId, 5)
+                            Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [light: ${light}]")
                         } catch (e: Exception) {
                             Timber.e(e)
                         }
 
                         var thingName: Int? = null
                         try {
-                            thingName = clustersHelper.getDeviceStateHumidityMinMeasurementCluster(device.deviceId, 3)
+                            thingName = clustersHelper.getDeviceStateHumidityMinMeasurementCluster(device.deviceId, 2)
                             Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [thingName: ${thingName}]")
                         } catch (e: Exception) {
                             Timber.e(e)
@@ -393,7 +414,7 @@ constructor(
 
                         var battery: Int? = null
                         try {
-                            battery = clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(device.deviceId, 3)
+                            battery = clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(device.deviceId, 2)
                             Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [battery: ${battery}]")
                         } catch (e: Exception) {
                             Timber.e(e)
@@ -408,10 +429,10 @@ constructor(
 //                        }
                         isOnline = true
 
-                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [pressure: ${pressure}], [humidity: ${humidity}], [thingName: ${thingName}], [battery: ${battery}]")
+                        Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [humidity: ${humidity}], [pressure: ${pressure}], [soilMoisture: ${soilMoisture}], [light: ${light}], [thingName: ${thingName}], [battery: ${battery}]")
                         // TODO: only need to do it if state has changed
                         devicesStateRepository.updateDeviceState(
-                            device.deviceId, isOnline = isOnline, isOn = isOn, temperature = temperature, pressure = pressure, humidity = humidity, thingName = thingName, battery = battery
+                            device.deviceId, isOnline = isOnline, isOn = isOn, temperature = temperature, humidity = humidity, pressure = pressure, soilMoisture = soilMoisture, light = light, thingName = thingName, battery = battery
                         )
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -439,6 +460,8 @@ constructor(
                     deviceId,
                     null,
                     isOn,
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -560,23 +583,6 @@ constructor(
                                         Timber.e(e)
                                     }
 
-                                    var pressure: Int? = null
-                                    try {
-//                                        pressure =
-//                                            clustersHelper.getDeviceStatePressureMeasurementCluster(
-//                                                device.deviceId,
-//                                                2
-//                                            )
-                                        pressure = subscriptionHelper.extractAttribute(
-                                            nodeState,
-                                            2,
-                                            PressureMeasurementAttribute
-                                        ) as Int?
-                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
-                                    } catch (e: Exception) {
-                                        Timber.e(e)
-                                    }
-
                                     var humidity: Int? = null
                                     try {
 //                                        humidity =
@@ -586,7 +592,7 @@ constructor(
 //                                            )
                                         humidity = subscriptionHelper.extractAttribute(
                                             nodeState,
-                                            3,
+                                            2,
                                             HumidityMeasurementAttribute
                                         ) as Int?
                                         Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [humidity: ${humidity}]")
@@ -594,16 +600,52 @@ constructor(
                                         Timber.e(e)
                                     }
 
-                                    var thingName: Int? = null
+                                    var pressure: Int? = null
                                     try {
-//                                        thingName =
-//                                            clustersHelper.getDeviceStateHumidityMinMeasurementCluster(
+//                                        pressure =
+//                                            clustersHelper.getDeviceStatePressureMeasurementCluster(
 //                                                device.deviceId,
-//                                                3
+//                                                2
 //                                            )
-                                        thingName = subscriptionHelper.extractAttribute(
+                                        pressure = subscriptionHelper.extractAttribute(
                                             nodeState,
                                             3,
+                                            PressureMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [pressure: ${pressure}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var soilMoisture: Int? = null
+                                    try {
+                                        soilMoisture = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            4,
+                                            SoilMoistureMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [soilMoisture: ${soilMoisture}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var light: Int? = null
+                                    try {
+                                        light = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            5,
+                                            LightMeasurementAttribute
+                                        ) as Int?
+                                        Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [light: ${light}]")
+                                    } catch (e: Exception) {
+                                        Timber.e(e)
+                                    }
+
+                                    var thingName: Int? = null
+                                    try {
+                                        thingName = subscriptionHelper.extractAttribute(
+                                            nodeState,
+                                            2,
                                             HumidityMinMeasurementAttribute
                                         ) as Int?
                                         Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [thingName: ${thingName}]")
@@ -613,14 +655,9 @@ constructor(
 
                                     var battery: Int? = null
                                     try {
-//                                        battery =
-//                                            clustersHelper.getDeviceStateHumidityMaxMeasurementCluster(
-//                                                device.deviceId,
-//                                                3
-//                                            )
                                         battery = subscriptionHelper.extractAttribute(
                                             nodeState,
-                                            3,
+                                            2,
                                             HumidityMaxMeasurementAttribute
                                         ) as Int?
                                         Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [battery: ${battery}]")
@@ -637,15 +674,17 @@ constructor(
 //                                    }
                                     isOnline = true
 
-                                    Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [pressure: ${pressure}], [humidity: ${humidity}], [thingName: ${thingName}], [battery: ${battery}]")
+                                    Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [humidity: ${humidity}], [pressure: ${pressure}], [soilMoisture: ${soilMoisture}], [light: ${light}], [thingName: ${thingName}], [battery: ${battery}]")
                                     // TODO: only need to do it if state has changed
                                     devicesStateRepository.updateDeviceState(
                                         device.deviceId,
                                         isOnline = isOnline,
                                         isOn = isOn,
                                         temperature = temperature,
-                                        pressure = pressure,
                                         humidity = humidity,
+                                        pressure = pressure,
+                                        soilMoisture = soilMoisture,
+                                        light = light,
                                         thingName = thingName,
                                         battery = battery
                                     )

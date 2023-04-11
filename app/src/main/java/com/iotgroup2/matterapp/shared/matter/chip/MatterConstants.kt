@@ -47,8 +47,10 @@ object MatterConstants {
     data class ClusterAttribute(val clusterId: Long, val attributeId: Long)
     val OnOffAttribute = ClusterAttribute(6L, 0L)
     val TemperatureMeasurementAttribute = ClusterAttribute(1026L, 0L)
-    val PressureMeasurementAttribute = ClusterAttribute(1027L, 0L)
     val HumidityMeasurementAttribute = ClusterAttribute(1029L, 0L)
     val HumidityMinMeasurementAttribute = ClusterAttribute(1029L, 1L)
     val HumidityMaxMeasurementAttribute = ClusterAttribute(1029L, 2L)
+    val PressureMeasurementAttribute = ClusterAttribute(1027L, 0L)
+    val SoilMoistureMeasurementAttribute = ClusterAttribute(1028L, 0L)
+    val LightMeasurementAttribute = ClusterAttribute(1024L, 0L)
 }

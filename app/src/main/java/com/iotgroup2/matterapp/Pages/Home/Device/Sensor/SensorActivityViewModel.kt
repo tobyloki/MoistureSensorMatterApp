@@ -27,10 +27,16 @@ class SensorActivityViewModel(private val deviceId: String) : ViewModel(), Defau
     val temperature = MutableLiveData<Int>().apply {
         value = 0
     }
+    val humidity = MutableLiveData<Int>().apply {
+        value = 0
+    }
     val pressure = MutableLiveData<Int>().apply {
         value = 0
     }
-    val moisture = MutableLiveData<Int>().apply {
+    val soilMoisture = MutableLiveData<Int>().apply {
+        value = 0
+    }
+    val light = MutableLiveData<Int>().apply {
         value = 0
     }
 
@@ -57,16 +63,22 @@ class SensorActivityViewModel(private val deviceId: String) : ViewModel(), Defau
 
                 val data = JSONObject(httpResponse)
                 temperature.value = data.getInt("temperature")
+                humidity.value = data.getInt("humidity")
                 pressure.value = data.getInt("pressure")
-                moisture.value = data.getInt("moisture")
+                soilMoisture.value = data.getInt("soilMoisture")
+                light.value = data.getInt("light")
 
                 val temperatureTime = data.getString("temperatureTime")
+                val humidityTime = data.getString("humidityTime")
                 val pressureTime = data.getString("pressureTime")
-                val moistureTime = data.getString("moistureTime")
+                val soilMoistureTime = data.getString("soilMoistureTime")
+                val lightTime = data.getString("lightTime")
 
                 Timber.i("temperatureTime: $temperatureTime")
+                Timber.i("humidityTime: $humidityTime")
                 Timber.i("pressureTime: $pressureTime")
-                Timber.i("moistureTime: $moistureTime")
+                Timber.i("soilMoistureTime: $soilMoistureTime")
+                Timber.i("lightTime: $lightTime")
             } catch (e: Exception) {
                 Timber.e("Error: ${e.message}")
             }

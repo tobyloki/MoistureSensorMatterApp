@@ -79,7 +79,7 @@ fun lifeCycleEvent(event: String): String {
 /** Set the strings for DeviceType. */
 lateinit var DeviceTypeStrings: MutableMap<Device.DeviceType, String>
 
-fun setDeviceTypeStrings(unspecified: String, light: String, outlet: String, unknown: String, colorTempLight: String, temperatureSensor: String, pressureSensor: String, humiditySensor: String) {
+fun setDeviceTypeStrings(unspecified: String, light: String, outlet: String, unknown: String, colorTempLight: String, temperatureSensor: String, humiditySensor: String, pressureSensor: String, soilMoistureSensor: String, lightSensor: String) {
   DeviceTypeStrings =
       mutableMapOf(
           Device.DeviceType.TYPE_UNSPECIFIED to unspecified,
@@ -89,7 +89,9 @@ fun setDeviceTypeStrings(unspecified: String, light: String, outlet: String, unk
             Device.DeviceType.TYPE_COLOR_TEMP_LIGHT to colorTempLight,
             Device.DeviceType.TYPE_TEMPERATURE_SENSOR to temperatureSensor,
             Device.DeviceType.TYPE_PRESSURE_SENSOR to pressureSensor,
-            Device.DeviceType.TYPE_HUMIDITY_SENSOR to humiditySensor
+            Device.DeviceType.TYPE_HUMIDITY_SENSOR to humiditySensor,
+            Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR to soilMoistureSensor,
+            Device.DeviceType.TYPE_LIGHT_SENSOR to lightSensor
       )
 }
 
@@ -106,6 +108,8 @@ fun convertToAppDeviceType(matterDeviceType: Long): Device.DeviceType {
     770L -> Device.DeviceType.TYPE_TEMPERATURE_SENSOR // 0x0302 (Temperature Sensor)
     773L -> Device.DeviceType.TYPE_PRESSURE_SENSOR // 0x0305 (Pressure Sensor)
     775L -> Device.DeviceType.TYPE_HUMIDITY_SENSOR // 0x0307 (Humidity Sensor)
+    774L -> Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR // 0x0306 (Soil Moisture Sensor)
+    262L -> Device.DeviceType.TYPE_LIGHT_SENSOR // 0x0106 (Light Sensor)
     else -> Device.DeviceType.TYPE_UNKNOWN
   }
 }
