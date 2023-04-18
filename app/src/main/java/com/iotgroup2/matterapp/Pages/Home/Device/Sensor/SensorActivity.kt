@@ -1,5 +1,6 @@
 package com.iotgroup2.matterapp.Pages.Home.Device.Sensor
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -29,6 +30,7 @@ import com.iotgroup2.matterapp.shared.Utility.Utility
 import com.iotgroup2.matterapp.shared.matter.*
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.lang.Math.exp
 import java.util.*
 
 @AndroidEntryPoint
@@ -131,7 +133,13 @@ class SensorActivity : AppCompatActivity() {
         // TODO: temporarily disabled until backend and hub updated to handle all 5 sensors
         sensorActivityViewModel.temperature.observe(this) {
             if (it != null) {
-                tempValueTxt.text = (it / 100).toString()
+                val unit = Utility.getUnit(this)
+
+                if(unit) {
+                    tempValueTxt.text = (it / 100).toString()
+                } else {
+                    tempValueTxt.text = Utility.convertCelsiusToFahrenheit(it / 100).toString()
+                }
             }
         }
         sensorActivityViewModel.humidity.observe(this) {
@@ -142,6 +150,14 @@ class SensorActivity : AppCompatActivity() {
         sensorActivityViewModel.pressure.observe(this) {
             if (it != null) {
                 pressureValueTxt.text = (it / 10).toString()
+
+                val unit = Utility.getUnit(this)
+
+                if (unit) {
+                    pressureValueTxt.text = (it / 10).toString()
+                } else {
+                    pressureValueTxt.text = Utility.convertKpaToBar(it / 10).toString()
+                }
             }
         }
         sensorActivityViewModel.soilMoisture.observe(this) {
@@ -319,14 +335,6 @@ class SensorActivity : AppCompatActivity() {
             viewModel.startMonitoringStateChanges()
         }
 
-        val unit = Utility.getUnit(this)
-        Timber.i("Unit: $unit")
-        if (unit) {
-            tempUnitTxt.text = "°C"
-        } else {
-            tempUnitTxt.text = "°F"
-        }
-
         updateUI()
     }
 
@@ -336,6 +344,7 @@ class SensorActivity : AppCompatActivity() {
         viewModel.stopMonitoringStateChanges()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateUI() {
         // start the timer that'll fetch sensor data from timestream
         sensorActivityViewModel.startTimer()
@@ -350,21 +359,40 @@ class SensorActivity : AppCompatActivity() {
         onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
         onlineTxt.text = if (deviceData.isOnline) "Online" else "Offline"
 
+        val unit = Utility.getUnit(this)
+        Timber.i("Unit: $unit")
+        if (unit) {
+            tempUnitTxt.text = "°C"
+            pressureUnitTxt.text = "kPa";
+
+        } else {
+            tempUnitTxt.text = "°F"
+            pressureUnitTxt.text = "Bar"
+        }
+
         // TODO: if not all data is reported at the same time, then default values are automatically 0 for some reason
         if (deviceData.temperature != 0) {
-            tempValueTxt.text = (deviceData.temperature / 100).toString()
+            if(unit) {
+                tempValueTxt.text = (deviceData.temperature / 100).toString()
+            } else {
+                tempValueTxt.text = Utility.convertCelsiusToFahrenheit(deviceData.temperature / 100).toString()
+            }
         }
         if (deviceData.humidity != 0) {
             humidityValueTxt.text = (deviceData.humidity / 100).toString()
         }
         if (deviceData.pressure != 0) {
-            pressureValueTxt.text = (deviceData.pressure / 10).toString()
+            if (unit) {
+                pressureValueTxt.text = (deviceData.pressure / 10).toString()
+            } else {
+                pressureValueTxt.text = Utility.convertKpaToBar(deviceData.pressure / 10).toString()
+            }
         }
         if (deviceData.soilMoisture != 0) {
             soilMoistureValueTxt.text = (deviceData.soilMoisture / 10).toString()
         }
         if (deviceData.light != 0) {
-            lightValueTxt.text = deviceData.light.toString()
+            lightValueTxt.text = ( kotlin.math.exp((deviceData.light - 1).toDouble() / 10000) ).toString()
         }
 
         if (deviceData.battery != 0) {

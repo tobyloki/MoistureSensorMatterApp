@@ -10,5 +10,13 @@ class Utility {
             val sharedPref = activity.getSharedPreferences("userPrefs", Context.MODE_PRIVATE) ?: return false
             return sharedPref.getBoolean(activity.getString(R.string.unit_key), false)
         }
+
+        fun convertCelsiusToFahrenheit(celsius: Int): Int {
+            return (celsius * 9 / 5) + 32
+        }
+
+        fun convertKpaToBar(kPa: Int): Int {
+            return kPa / 100
+        }
     }
 }
