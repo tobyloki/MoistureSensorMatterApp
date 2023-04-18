@@ -128,7 +128,7 @@ constructor(
                 devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false, temperature = 0, humidity = 0, pressure = 0, soilMoisture = 0, light = 0, thingName = 0, battery = 0))
             } else {
                 Timber.d("    deviceId setting its own value for state")
-                devicesUiModel.add(DeviceUiModel(device, state.online, state.on, state.temperature, state.humidity, state.pressure, state.soilMoisture, state.light, state.thingName, state.battery))
+                devicesUiModel.add(DeviceUiModel(device, /*state.online*/ false, state.on, state.temperature, state.humidity, state.pressure, state.soilMoisture, state.light, state.thingName, state.battery))
             }
         }
         return devicesUiModel
@@ -420,14 +420,10 @@ constructor(
                             Timber.e(e)
                         }
 
-                        val isOnline: Boolean
-//                        if (thingName == null && isOn == null) {
-//                            Timber.e("runDevicesPeriodicUpdate: cannot get device thingName or isOn -> OFFLINE")
-//                            isOnline = false
-//                        } else {
-//                            isOnline = true
-//                        }
-                        isOnline = true
+                        var isOnline = false
+                        if (thingName != null || isOn != null) {
+                            isOnline = true
+                        }
 
                         Timber.i("runDevicesPeriodicPing [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [humidity: ${humidity}], [pressure: ${pressure}], [soilMoisture: ${soilMoisture}], [light: ${light}], [thingName: ${thingName}], [battery: ${battery}]")
                         // TODO: only need to do it if state has changed
@@ -665,14 +661,10 @@ constructor(
                                         Timber.e(e)
                                     }
 
-                                    val isOnline: Boolean
-//                                    if (thingName == null && isOn == null) {
-//                                        Timber.e("subscribeToDevicesPeriodicUpdates: cannot get device thingName or isOn -> OFFLINE")
-//                                        isOnline = false
-//                                    } else {
-//                                        isOnline = true
-//                                    }
-                                    isOnline = true
+                                    var isOnline = false
+                                    if (thingName != null || isOn != null) {
+                                        isOnline = true
+                                    }
 
                                     Timber.i("subscribeToDevicesPeriodicUpdates [deviceId: ${device.deviceId}], [isOnline: ${isOnline}], [isOn: ${isOn}], [temperature: ${temperature}], [humidity: ${humidity}], [pressure: ${pressure}], [soilMoisture: ${soilMoisture}], [light: ${light}], [thingName: ${thingName}], [battery: ${battery}]")
                                     // TODO: only need to do it if state has changed

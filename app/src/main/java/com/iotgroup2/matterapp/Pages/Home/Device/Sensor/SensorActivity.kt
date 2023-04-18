@@ -32,6 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import java.lang.Math.exp
 import java.util.*
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class SensorActivity : AppCompatActivity() {
@@ -133,40 +134,47 @@ class SensorActivity : AppCompatActivity() {
         // TODO: temporarily disabled until backend and hub updated to handle all 5 sensors
         sensorActivityViewModel.temperature.observe(this) {
             if (it != null) {
+                Timber.i("Temperature: $it")
+
                 val unit = Utility.getUnit(this)
 
                 if(unit) {
-                    tempValueTxt.text = (it / 100).toString()
+                    tempValueTxt.text = it.toString()
                 } else {
-                    tempValueTxt.text = Utility.convertCelsiusToFahrenheit(it / 100).toString()
+                    tempValueTxt.text = Utility.convertCelsiusToFahrenheit(it).toString()
                 }
+
+                Timber.i("Temperature 3 : ${tempValueTxt.text}")
             }
         }
         sensorActivityViewModel.humidity.observe(this) {
             if (it != null) {
-                humidityValueTxt.text = (it / 100).toString()
+                Timber.i("Humidity: $it")
+                humidityValueTxt.text = it.toString()
             }
         }
         sensorActivityViewModel.pressure.observe(this) {
             if (it != null) {
-                pressureValueTxt.text = (it / 10).toString()
+                Timber.i("Pressure: $it")
 
                 val unit = Utility.getUnit(this)
 
                 if (unit) {
-                    pressureValueTxt.text = (it / 10).toString()
+                    pressureValueTxt.text = it.toString()
                 } else {
-                    pressureValueTxt.text = Utility.convertKpaToBar(it / 10).toString()
+                    pressureValueTxt.text = Utility.convertKpaToBar(it).toString()
                 }
             }
         }
         sensorActivityViewModel.soilMoisture.observe(this) {
             if (it != null) {
-                soilMoistureValueTxt.text = (it / 10).toString()
+                Timber.i("Soil Moisture: $it")
+                soilMoistureValueTxt.text = it.toString()
             }
         }
         sensorActivityViewModel.light.observe(this) {
             if (it != null) {
+                Timber.i("Light: $it")
                 lightValueTxt.text = it.toString()
             }
         }
@@ -392,7 +400,9 @@ class SensorActivity : AppCompatActivity() {
             soilMoistureValueTxt.text = (deviceData.soilMoisture / 10).toString()
         }
         if (deviceData.light != 0) {
-            lightValueTxt.text = ( kotlin.math.exp((deviceData.light - 1).toDouble() / 10000) ).toString()
+            val value = ( kotlin.math.exp((deviceData.light - 1).toDouble() / 10000) )
+            // format to 1 decimal place
+            lightValueTxt.text = String.format("%.1f", value)
         }
 
         if (deviceData.battery != 0) {

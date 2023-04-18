@@ -1,6 +1,7 @@
 package com.iotgroup2.matterapp.Pages.Home.Device.Sensor
 
 import androidx.lifecycle.*
+import com.google.ar.core.dependencies.e
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -61,24 +62,53 @@ class SensorActivityViewModel(private val deviceId: String) : ViewModel(), Defau
                 val httpResponse = HTTPRest.retrofitService.fetchSensorData(deviceId).await()
                 Timber.i("data: $httpResponse")
 
-                val data = JSONObject(httpResponse)
-                temperature.value = data.getInt("temperature")
-                humidity.value = data.getInt("humidity")
-                pressure.value = data.getInt("pressure")
-                soilMoisture.value = data.getInt("soilMoisture")
-                light.value = data.getInt("light")
+                var temperatureTime: String? = null
+                var humidityTime: String? = null
+                var pressureTime: String? = null
+                var soilMoistureTime: String? = null
+                var lightTime: String? = null
 
-                val temperatureTime = data.getString("temperatureTime")
-                val humidityTime = data.getString("humidityTime")
-                val pressureTime = data.getString("pressureTime")
-                val soilMoistureTime = data.getString("soilMoistureTime")
-                val lightTime = data.getString("lightTime")
+                // run on main thread
+                launch(Dispatchers.Main) {
+                    val data = JSONObject(httpResponse)
+                    try {
+                        temperature.value = data.getInt("temperature")
+                        temperatureTime = data.getString("temperatureTime")
+                    } catch (_: Exception) {
+                    }
+                    try {
+                        humidity.value = data.getInt("humidity")
+                        humidityTime = data.getString("humidityTime")
+                    } catch (_: Exception) {
+                    }
+                    try {
+                        pressure.value = data.getInt("pressure")
+                        pressureTime = data.getString("pressureTime")
+                    } catch (_: Exception) {
+                    }
+                    try {
+                        soilMoisture.value = data.getInt("soilMoisture")
+                        soilMoistureTime = data.getString("soilMoistureTime")
+                    } catch (_: Exception) {
+                    }
+                    try {
+                        light.value = data.getInt("light")
+                        lightTime = data.getString("lightTime")
+                    } catch (_: Exception) {
+                    }
 
-                Timber.i("temperatureTime: $temperatureTime")
-                Timber.i("humidityTime: $humidityTime")
-                Timber.i("pressureTime: $pressureTime")
-                Timber.i("soilMoistureTime: $soilMoistureTime")
-                Timber.i("lightTime: $lightTime")
+                    Timber.i("temperature: ${temperature.value}")
+                    Timber.i("humidity: ${humidity.value}")
+                    Timber.i("pressure: ${pressure.value}")
+                    Timber.i("soilMoisture: ${soilMoisture.value}")
+                    Timber.i("light: ${light.value}")
+
+                    Timber.i("temperatureTime: $temperatureTime")
+                    Timber.i("humidityTime: $humidityTime")
+                    Timber.i("pressureTime: $pressureTime")
+                    Timber.i("soilMoistureTime: $soilMoistureTime")
+                    Timber.i("lightTime: $lightTime")
+                }
             } catch (e: Exception) {
                 Timber.e("Error: ${e.message}")
             }
