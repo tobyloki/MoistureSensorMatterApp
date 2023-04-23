@@ -11,12 +11,12 @@ class Utility {
             return sharedPref.getBoolean(activity.getString(R.string.unit_key), false)
         }
 
-        fun convertCelsiusToFahrenheit(celsius: Int): Int {
+        fun convertCelsiusToFahrenheit(celsius: Double): Double {
             return (celsius * 9 / 5) + 32
         }
 
-        fun convertKpaToBar(kPa: Int): Int {
-            return kPa / 100
+        fun convert_inHg_to_kPA(inHg: Double): Double {
+            return inHg * 3.38639
         }
     }
 }

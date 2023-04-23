@@ -30,9 +30,7 @@ import com.iotgroup2.matterapp.shared.Utility.Utility
 import com.iotgroup2.matterapp.shared.matter.*
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-import java.lang.Math.exp
 import java.util.*
-import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class SensorActivity : AppCompatActivity() {
@@ -119,6 +117,7 @@ class SensorActivity : AppCompatActivity() {
 
         deviceName = extras.getString("deviceName").toString()
         val deviceOnline = extras.getBoolean("deviceOnline")
+        Timber.i("ONline: $deviceOnline")
 
         nameTxt.text = deviceName
         onlineIcon.setTextColor(if (deviceOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
@@ -126,6 +125,12 @@ class SensorActivity : AppCompatActivity() {
 
         deviceViewModel = ViewModelProvider(this).get(DeviceViewModel::class.java)
         lifecycle.addObserver(deviceViewModel)
+
+        deviceViewModel.setOnline(deviceOnline)
+        deviceViewModel.deviceOnline.observe(this) { online ->
+            onlineIcon.setTextColor(if (online) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
+            onlineTxt.text = if (online) "Online" else "Offline"
+        }
 
         sensorActivityViewModel = ViewModelProvider(this, SensorActivityViewModelFactory(deviceId)).get(
             SensorActivityViewModel::class.java)
@@ -139,9 +144,9 @@ class SensorActivity : AppCompatActivity() {
                 val unit = Utility.getUnit(this)
 
                 if(unit) {
-                    tempValueTxt.text = it.toString()
+                    tempValueTxt.text = String.format("%.1f", it.toDouble())
                 } else {
-                    tempValueTxt.text = Utility.convertCelsiusToFahrenheit(it).toString()
+                    tempValueTxt.text = String.format("%.1f", Utility.convertCelsiusToFahrenheit(it.toDouble()))
                 }
 
                 Timber.i("Temperature 3 : ${tempValueTxt.text}")
@@ -150,7 +155,7 @@ class SensorActivity : AppCompatActivity() {
         sensorActivityViewModel.humidity.observe(this) {
             if (it != null) {
                 Timber.i("Humidity: $it")
-                humidityValueTxt.text = it.toString()
+                humidityValueTxt.text = String.format("%.1f", it.toDouble())
             }
         }
         sensorActivityViewModel.pressure.observe(this) {
@@ -160,9 +165,9 @@ class SensorActivity : AppCompatActivity() {
                 val unit = Utility.getUnit(this)
 
                 if (unit) {
-                    pressureValueTxt.text = it.toString()
+                    pressureValueTxt.text = String.format("%.1f", Utility.convert_inHg_to_kPA(it.toDouble()))
                 } else {
-                    pressureValueTxt.text = Utility.convertKpaToBar(it).toString()
+                    pressureValueTxt.text = String.format("%.1f", it.toDouble())
                 }
             }
         }
@@ -175,7 +180,7 @@ class SensorActivity : AppCompatActivity() {
         sensorActivityViewModel.light.observe(this) {
             if (it != null) {
                 Timber.i("Light: $it")
-                lightValueTxt.text = it.toString()
+                lightValueTxt.text = String.format("%.1f", it.toDouble())
             }
         }
 
@@ -352,8 +357,13 @@ class SensorActivity : AppCompatActivity() {
         viewModel.stopMonitoringStateChanges()
     }
 
+    private var lastTemp: Double = 0.0;
+    private var lastPressure: Double = 0.0;
+
     @SuppressLint("SetTextI18n")
     private fun updateUI() {
+        deviceViewModel.startTimer()
+
         // start the timer that'll fetch sensor data from timestream
         sensorActivityViewModel.startTimer()
 
@@ -367,33 +377,53 @@ class SensorActivity : AppCompatActivity() {
         onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
         onlineTxt.text = if (deviceData.isOnline) "Online" else "Offline"
 
+        Timber.i("ONline f: ${deviceData.isOnline}")
+        deviceViewModel.setOnline(deviceData.isOnline)
+
+
         val unit = Utility.getUnit(this)
         Timber.i("Unit: $unit")
         if (unit) {
             tempUnitTxt.text = "°C"
-            pressureUnitTxt.text = "kPa";
+            pressureUnitTxt.text = "kPa"
 
         } else {
             tempUnitTxt.text = "°F"
-            pressureUnitTxt.text = "Bar"
+            pressureUnitTxt.text = "inHg"
         }
 
         // TODO: if not all data is reported at the same time, then default values are automatically 0 for some reason
         if (deviceData.temperature != 0) {
+            lastTemp = deviceData.temperature.toDouble()
+
             if(unit) {
-                tempValueTxt.text = (deviceData.temperature / 100).toString()
+                tempValueTxt.text = String.format("%.1f", deviceData.temperature / 100)
             } else {
-                tempValueTxt.text = Utility.convertCelsiusToFahrenheit(deviceData.temperature / 100).toString()
+                tempValueTxt.text = String.format("%.1f", Utility.convertCelsiusToFahrenheit(deviceData.temperature.toDouble() / 100))
+            }
+        } else {
+            if(unit) {
+                tempValueTxt.text = String.format("%.1f", lastTemp / 100)
+            } else {
+                tempValueTxt.text = String.format("%.1f", Utility.convertCelsiusToFahrenheit(lastTemp / 100))
             }
         }
         if (deviceData.humidity != 0) {
-            humidityValueTxt.text = (deviceData.humidity / 100).toString()
+            humidityValueTxt.text = String.format("%.1f", deviceData.humidity.toDouble() / 100)
         }
         if (deviceData.pressure != 0) {
+            lastPressure = deviceData.pressure.toDouble()
+
             if (unit) {
-                pressureValueTxt.text = (deviceData.pressure / 10).toString()
+                pressureValueTxt.text = String.format("%.1f", Utility.convert_inHg_to_kPA(deviceData.pressure.toDouble() / 10))
             } else {
-                pressureValueTxt.text = Utility.convertKpaToBar(deviceData.pressure / 10).toString()
+                pressureValueTxt.text = String.format("%.1f", deviceData.pressure.toDouble() / 10)
+            }
+        } else {
+            if (unit) {
+                pressureValueTxt.text = String.format("%.1f", Utility.convert_inHg_to_kPA(lastPressure.toDouble() / 10))
+            } else {
+                pressureValueTxt.text = String.format("%.1f", lastPressure / 10)
             }
         }
         if (deviceData.soilMoisture != 0) {

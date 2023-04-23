@@ -89,6 +89,17 @@ class ActuatorActivity : AppCompatActivity() {
         deviceViewModel = ViewModelProvider(this).get(DeviceViewModel::class.java)
         lifecycle.addObserver(deviceViewModel)
 
+        deviceViewModel.setOnline(deviceOnline)
+        deviceViewModel.deviceOnline.observe(this) { online ->
+            // TODO: ignore if false for Actuator only
+            if (!online) {
+                return@observe
+            }
+
+            onlineIcon.setTextColor(if (online) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
+            onlineTxt.text = if (online) "Online" else "Offline"
+        }
+
         // matter device list
         viewModel.devicesUiModelLiveData.observe(this) { devicesUiModel: DevicesUiModel ->
             for (device in devicesUiModel.devices) {
@@ -237,6 +248,8 @@ class ActuatorActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
+        deviceViewModel.startTimer()
+
         if (deviceUiModel == null) {
             return
         }
@@ -244,6 +257,7 @@ class ActuatorActivity : AppCompatActivity() {
         val device = deviceData.device
 
         Timber.i("Device online: ${deviceData.isOnline}")
+        deviceViewModel.setOnline(deviceData.isOnline)
 
         nameTxt.text = device.name
         onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))

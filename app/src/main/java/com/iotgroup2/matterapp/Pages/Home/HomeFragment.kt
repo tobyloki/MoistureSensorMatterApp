@@ -125,7 +125,7 @@ class HomeFragment : Fragment() {
             if (isSensorFilter) {
                 devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type == Device.DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_PRESSURE_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_LIGHT_SENSOR_VALUE })
             } else {
-                devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type != Device.DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_PRESSURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_LIGHT_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_UNKNOWN_VALUE && it.type != Device.DeviceType.TYPE_UNSPECIFIED_VALUE })
+                devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices.filter { it.type != Device.DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_PRESSURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_LIGHT_SENSOR_VALUE /*&& it.type != Device.DeviceType.TYPE_UNKNOWN_VALUE && it.type != Device.DeviceType.TYPE_UNSPECIFIED_VALUE*/ })
             }
 //            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), devices)
         }
@@ -199,7 +199,7 @@ class HomeFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), HomeViewModel.devices.value!!.filter { it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), HomeViewModel.devices.value!!.filter { it.type == Device.DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_PRESSURE_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE || it.type == Device.DeviceType.TYPE_LIGHT_SENSOR_VALUE })
         }
 
         actuatorFilterBtn.setOnClickListener {
@@ -211,7 +211,7 @@ class HomeFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), HomeViewModel.devices.value!!.filter { it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE })
+            devicesListRecyclerView.adapter = HomeAdapter(requireContext(), HomeViewModel.devices.value!!.filter { it.type != Device.DeviceType.TYPE_TEMPERATURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_PRESSURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_HUMIDITY_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_SOIL_MOISTURE_SENSOR_VALUE && it.type != Device.DeviceType.TYPE_LIGHT_SENSOR_VALUE /*&& it.type != Device.DeviceType.TYPE_UNKNOWN_VALUE && it.type != Device.DeviceType.TYPE_UNSPECIFIED_VALUE*/ })
         }
 
         // Setup Interactions Within Devices View

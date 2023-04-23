@@ -128,7 +128,8 @@ constructor(
                 devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false, temperature = 0, humidity = 0, pressure = 0, soilMoisture = 0, light = 0, thingName = 0, battery = 0))
             } else {
                 Timber.d("    deviceId setting its own value for state")
-                devicesUiModel.add(DeviceUiModel(device, /*state.online*/ false, state.on, state.temperature, state.humidity, state.pressure, state.soilMoisture, state.light, state.thingName, state.battery))
+                Timber.i("    deviceId: [${device.deviceId}]}, online: [${state.online}]")
+                devicesUiModel.add(DeviceUiModel(device, state.online, state.on, state.temperature, state.humidity, state.pressure, state.soilMoisture, state.light, state.thingName, state.battery))
             }
         }
         return devicesUiModel

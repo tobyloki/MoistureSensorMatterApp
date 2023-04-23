@@ -20,6 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -58,12 +60,43 @@ constructor(
     val shareDeviceIntentSender: LiveData<IntentSender?>
         get() = _shareDeviceIntentSender
 
-    override fun onCreate(owner: LifecycleOwner) {
-        super.onCreate(owner)
+    private var timer = Timer()
+    val deviceOnline = MutableLiveData<Boolean>().apply {
+        value = false
     }
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
+        startTimer()
+    }
+
+    override fun onPause(owner: LifecycleOwner) {
+        super.onPause(owner)
+        cancelTimer()
+    }
+
+    fun setOnline(online: Boolean) {
+        deviceOnline.postValue(online)
+    }
+
+    fun startTimer() {
+        cancelTimer()
+
+        // start timer to fetch sensor data every 5 seconds
+        timer = Timer()
+        timer.schedule(object : TimerTask() {
+            override fun run() {
+                setOnline(false)
+                startTimer()
+            }
+        }, 3000)
+    }
+
+    private fun cancelTimer() {
+        try {
+            timer.cancel()
+            Timber.i("Timer cancelled")
+        } catch (_: Exception) {}
     }
 
     // -----------------------------------------------------------------------------------------------
