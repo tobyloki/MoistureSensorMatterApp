@@ -397,7 +397,7 @@ class SensorActivity : AppCompatActivity() {
             lastTemp = deviceData.temperature.toDouble()
 
             if(unit) {
-                tempValueTxt.text = String.format("%.1f", deviceData.temperature / 100)
+                tempValueTxt.text = String.format("%.1f", deviceData.temperature.toDouble() / 100)
             } else {
                 tempValueTxt.text = String.format("%.1f", Utility.convertCelsiusToFahrenheit(deviceData.temperature.toDouble() / 100))
             }

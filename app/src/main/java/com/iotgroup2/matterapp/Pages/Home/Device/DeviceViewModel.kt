@@ -89,7 +89,7 @@ constructor(
                 setOnline(false)
                 startTimer()
             }
-        }, 3000)
+        }, 6000)
     }
 
     private fun cancelTimer() {
