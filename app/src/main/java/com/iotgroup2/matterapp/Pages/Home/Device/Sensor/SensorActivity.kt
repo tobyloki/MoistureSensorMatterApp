@@ -374,12 +374,15 @@ class SensorActivity : AppCompatActivity() {
         val device = deviceData.device
 
         nameTxt.text = device.name
-        onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
-        onlineTxt.text = if (deviceData.isOnline) "Online" else "Offline"
 
-        Timber.i("ONline f: ${deviceData.isOnline}")
-        deviceViewModel.setOnline(deviceData.isOnline)
+        // TODO: online flickers back and forth a lot, so just update only if online
+        if (deviceData.isOnline) {
+            onlineIcon.setTextColor(if (deviceData.isOnline) ContextCompat.getColor(this, R.color.online) else ContextCompat.getColor(this, R.color.offline))
+            onlineTxt.text = if (deviceData.isOnline) "Online" else "Offline"
 
+            Timber.i("ONline f: ${deviceData.isOnline}")
+            deviceViewModel.setOnline(deviceData.isOnline)
+        }
 
         val unit = Utility.getUnit(this)
         Timber.i("Unit: $unit")
