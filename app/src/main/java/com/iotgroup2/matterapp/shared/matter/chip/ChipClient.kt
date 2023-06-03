@@ -83,6 +83,30 @@ class ChipClient @Inject constructor(@ApplicationContext context: Context) {
         }
     }
 
+    /**
+     * Removes the app's fabric from the device.
+     *
+     * @param nodeId node identifier
+     */
+    suspend fun awaitUnpairDevice(nodeId: Long) {
+        return suspendCoroutine { continuation ->
+            Timber.d("Calling chipDeviceController.unpair")
+            val callback: UnpairDeviceCallback =
+                object : UnpairDeviceCallback {
+                    override fun onError(status: Int, nodeId: Long) {
+                        continuation.resumeWithException(
+                            java.lang.IllegalStateException(
+                                "Failed unpairing device [$nodeId] with status [$status]"))
+                    }
+                    override fun onSuccess(nodeId: Long) {
+                        Timber.d("awaitUnpairDevice.onSuccess: deviceId [$nodeId]")
+                        continuation.resume(Unit)
+                    }
+                }
+            chipDeviceController.unpairDeviceCallback(nodeId, callback)
+        }
+    }
+
     fun computePaseVerifier(
         devicePtr: Long,
         pinCode: Long,

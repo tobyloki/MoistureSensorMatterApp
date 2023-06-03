@@ -27,6 +27,9 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import timber.log.Timber
+import java.security.SecureRandom
+import kotlin.math.abs
+import kotlin.math.max
 
 /** Variety of constants and utility functions used in the app. */
 
@@ -216,6 +219,20 @@ fun <T> MutableList<T>.mapButReplace(targetItem: T, newItem: T) = map {
   }
 }
 
+/** Generates a random number to be used as a device identifier during device commissioning */
+fun generateNextDeviceId(): Long {
+  val secureRandom =
+    try {
+      SecureRandom.getInstance("SHA1PRNG")
+    } catch (ex: Exception) {
+      Timber.w(ex, "Failed to instantiate SecureRandom with SHA1PRNG")
+      // instantiate with the default algorithm
+      SecureRandom()
+    }
+
+  return max(abs(secureRandom.nextLong()), 1)
+}
+
 /**
  * Strip the link-local portion of an IP Address. Was needed to handle
  * https://github.com/google-home/sample-app-for-matter-android/issues/15. For example:
@@ -263,6 +280,9 @@ fun showAlertDialog(alertDialog: AlertDialog, title: String?, message: String?) 
 }
 
 data class ErrorInfo(val title: String?, val message: String?)
+
+// Used by ViewModel to communicate a UI action to be processed by a Fragment.
+data class UiAction(val id: String, val data: String? = null)
 
 // -------------------------------------------------------------------------------------------------
 // Device Sharing constants
@@ -312,6 +332,34 @@ const val DEVICE_SHARING_WITH_GPS = true
 enum class OpenCommissioningWindowApi {
   ChipDeviceController,
   AdministratorCommissioningCluster
+}
+
+// Which method should be used to generate identifiers for devices being commissioned
+enum class DeviceIdGenerator {
+  Random,
+  Incremental
+}
+
+/**
+ * Indicates the status of a node's commissioning window. Useful in the context of "multi-admin"
+ * when a temporary commissioning window must be open for a target commissioner. That's because
+ * sometimes multi-admin may fail with the target commissioner (especially in a testing environment)
+ * and the temporary commissioning window can then stay open for a substantial amount of time (e.g.
+ * 3 minutes) preventing a new "multi-admin" to fail until that temporary commissioning window is
+ * closed. Checking on the status of the commissioning window beforehand makes it possible to close
+ * the currently open temporary commissioning window before trying to open a new one. [status] is
+ * the enum value returned by reading the WindowStatusAttribute of the "Administrator Commissioning
+ * Cluster". (See spec section "11.18.6.1. CommissioningWindowStatus enum").
+ */
+enum class CommissioningWindowStatus(val status: Int) {
+  /** Commissioning window not open */
+  WindowNotOpen(0),
+
+  /** An Enhanced Commissioning Method window is open */
+  EnhancedWindowOpen(1),
+
+  /** A Basic Commissioning Method window is open */
+  BasicWindowOpen(2)
 }
 
 val OPEN_COMMISSIONING_WINDOW_API = OpenCommissioningWindowApi.ChipDeviceController

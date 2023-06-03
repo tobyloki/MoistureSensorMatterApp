@@ -211,6 +211,13 @@ constructor(
                     gotDeviceType = true
                 }
             }
+
+            // update device name
+            try {
+                clustersHelper.writeBasicClusterNodeLabelAttribute(deviceId, deviceName)
+            } catch (ex: Exception) {
+                Timber.d(ex, "Failed to write NodeLabel")
+            }
         }
     }
 
@@ -483,14 +490,39 @@ constructor(
         }
     }
 
+    // Removes the device. First we remove the fabric from the device, and then we remove the
+    // device from the app's devices repository.
+    // If removing the fabric from the device fails (e.g. device is offline), a dialog is shown so
+    // the user has the option to force remove the device without unlinking the fabric at the
+    // device. If a forced removal is selected, then function removeDeviceWithoutUnlink is called.
+    // TODO: The device will still be linked to the local Android fabric. We should remove all the
+    //  fabrics at the device.
     fun removeDevice(deviceId: Long) {
         Timber.d("**************** remove device ****** [${deviceId}]")
+        // ToDo() add UnpairDeviceCallback to unpairDevice and move the block below into
+        //  UnpairDeviceCallback.onSuccess
         viewModelScope.launch {
             try {
-                devicesRepository.removeDevice(deviceId)
+                chipClient.awaitUnpairDevice(deviceId)
             } catch (e: Exception) {
-                Timber.e(e)
+                Timber.e(e, "Unlinking the device failed.")
+//                return@launch
             }
+
+            devicesRepository.removeDevice(deviceId)
+        }
+    }
+
+    // Removes the device from the app's devices repository, and does not unlink the fabric
+    // from the device.
+    // This function is called after removeDevice() has failed trying to unlink the device
+    // and the user has confirmed that the device should still be removed from the app's device
+    // repository.
+    fun removeDeviceWithoutUnlink(deviceId: Long) {
+        Timber.d("removeDeviceWithoutUnlink: [${deviceId}]")
+        viewModelScope.launch {
+            // Remove device from the app's devices repository.
+            devicesRepository.removeDevice(deviceId)
         }
     }
 

@@ -25,8 +25,10 @@ import com.google.android.gms.home.matter.commissioning.CommissioningService
 import com.iotgroup2.matterapp.shared.matter.APP_NAME
 import com.iotgroup2.matterapp.shared.matter.chip.ChipClient
 import com.iotgroup2.matterapp.R
+import com.iotgroup2.matterapp.shared.matter.DeviceIdGenerator
 import com.iotgroup2.matterapp.shared.matter.data.DevicesRepository
 import com.iotgroup2.matterapp.shared.matter.data.DevicesStateRepository
+import com.iotgroup2.matterapp.shared.matter.generateNextDeviceId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -94,7 +96,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
         // CODELAB: onCommissioningRequested()
         // Perform commissioning on custom fabric for the sample app.
         serviceScope.launch {
-            val deviceId = devicesRepository.incrementAndReturnLastDeviceId()
+            val deviceId = getNextDeviceId(DeviceIdGenerator.Incremental)
             try {
                 Timber.d(
                     "Commissioning: App fabric -> ChipClient.establishPaseConnection(): deviceId [${deviceId}]")
@@ -137,5 +139,22 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
                 }
         }
         // CODELAB SECTION END
+    }
+
+    /**
+     * Generates the device id for the device being commissioned ToDo() move this function into an
+     * appropriate class to make it visible in HomeFragmentRecyclerViewTest
+     *
+     * @param generator the method used to generate the device id
+     */
+    private suspend fun getNextDeviceId(generator: DeviceIdGenerator): Long {
+        return when (generator) {
+            DeviceIdGenerator.Incremental -> {
+                devicesRepository.incrementAndReturnLastDeviceId()
+            }
+            DeviceIdGenerator.Random -> {
+                generateNextDeviceId()
+            }
+        }
     }
 }

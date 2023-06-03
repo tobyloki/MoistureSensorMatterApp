@@ -17,7 +17,9 @@
 package com.iotgroup2.matterapp.shared.matter.chip
 
 import chip.devicecontroller.ChipClusters
+import chip.devicecontroller.ChipClusters.BasicInformationCluster
 import chip.devicecontroller.ChipStructs
+import com.iotgroup2.matterapp.shared.matter.CommissioningWindowStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -318,6 +320,68 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
   private fun getBasicClusterForDevice(devicePtr: Long, endpoint: Int): ChipClusters.ApplicationBasicCluster {
     return ChipClusters.ApplicationBasicCluster(devicePtr, endpoint)
   }
+
+    /**
+     * Writes NodeLabel attribute
+     *
+     * @param deviceId device identifier
+     * @param nodeLabel device name/node label
+     */
+    suspend fun writeBasicClusterNodeLabelAttribute(deviceId: Long, nodeLabel: String) {
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return
+            }
+
+        return suspendCoroutine { continuation ->
+            val callback =
+                object : ChipClusters.DefaultClusterCallback {
+                    override fun onSuccess() {
+                        continuation.resume(Unit)
+                    }
+
+                    override fun onError(ex: Exception) {
+                        continuation.resumeWithException(ex)
+                    }
+                }
+
+            BasicInformationCluster(connectedDevicePtr, 0).writeNodeLabelAttribute(callback, nodeLabel)
+        }
+    }
+
+    /**
+     * Reads NodeLabel attribute
+     *
+     * @param deviceId device identifier
+     * @return the NodeLabel
+     */
+    suspend fun readBasicClusterNodeLabelAttribute(deviceId: Long): String? {
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Timber.e("Can't get connectedDevicePointer.")
+                return null
+            }
+
+        return suspendCoroutine { continuation ->
+            val callback =
+                object : ChipClusters.CharStringAttributeCallback {
+                    override fun onSuccess(value: String?) {
+                        continuation.resume(value)
+                    }
+
+                    override fun onError(ex: Exception) {
+                        continuation.resumeWithException(ex)
+                    }
+                }
+
+            BasicInformationCluster(connectedDevicePtr, 0).readNodeLabelAttribute(callback)
+        }
+    }
 
   // -----------------------------------------------------------------------------------------------
   // OnOffCluster functions
@@ -664,6 +728,64 @@ class ClustersHelper @Inject constructor(private val chipClient: ChipClient) {
               timedInvokeTimeoutMs)
     }
   }
+
+    /**
+     * Closes a node's commissioning window. See spec section "11.18.8.3. RevokeCommissioning
+     * Command".
+     *
+     * @param devicePtr connected device pointer.
+     */
+    suspend fun closeCommissioningWindow(devicePtr: Long) {
+        return suspendCoroutine { continuation ->
+            val callback =
+                object : ChipClusters.DefaultClusterCallback {
+                    override fun onSuccess() {
+                        Timber.d("Window is closed successfully")
+                        continuation.resume(Unit)
+                    }
+
+                    override fun onError(ex: Exception) {
+                        Timber.e("Failed to close window. Cause: ${ex.localizedMessage}")
+                    }
+                }
+            ChipClusters.AdministratorCommissioningCluster(devicePtr, 0)
+                .revokeCommissioning(callback, 100)
+        }
+    }
+
+    /**
+     * Checks if a device has an open commissioning window. See spec section "11.18.7. Attributes" of
+     * the "Administrator Commissioning Cluster".
+     *
+     * @param devicePtr connected device pointer.
+     * @return true if a window is open, false otherwise.
+     */
+    suspend fun isCommissioningWindowOpen(devicePtr: Long): Boolean {
+        return suspendCoroutine { continuation ->
+            val callback =
+                object : ChipClusters.IntegerAttributeCallback {
+                    override fun onSuccess(value: Int) {
+                        when (value) {
+                            CommissioningWindowStatus.WindowNotOpen.status -> {
+                                continuation.resume(false)
+                            }
+                            CommissioningWindowStatus.EnhancedWindowOpen.status,
+                            CommissioningWindowStatus.BasicWindowOpen.status -> {
+                                continuation.resume(true)
+                            }
+                        }
+                    }
+
+                    override fun onError(ex: Exception) {
+                        Timber.e("Failed to check window status. Cause: ${ex.localizedMessage}")
+                        continuation.resumeWithException(ex)
+                    }
+                }
+
+            ChipClusters.AdministratorCommissioningCluster(devicePtr, 0)
+                .readWindowStatusAttribute(callback)
+        }
+    }
 
   private fun getAdministratorCommissioningClusterForDevice(
       devicePtr: Long,
